@@ -6,8 +6,9 @@
 This documentation is intended for both humans and AI assistants and should be kept in
 sync with changes in the codebase.
 
-The documentation is structed as a series of short concise files arranged in a
-hierarchy. Cross-links and indexes should be actively maintained. If the documentation contains inaccurate or out-of-date information update the docs.
+The documentation is structured as a series of short concise files arranged in a
+hierarchy. Cross-links and indexes should be actively maintained. If the documentation
+contains inaccurate or out-of-date information update the docs.
 
 ## Setup
 
