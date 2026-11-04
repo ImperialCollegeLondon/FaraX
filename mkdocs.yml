@@ -41,5 +41,6 @@ plugins:
 
 nav:
   - FaraX documentation: index.md
+  - Developer Guide: developer/index.md
   # defer to gen-files + literate-nav
   - Code Reference: reference/
