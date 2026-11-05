@@ -12,10 +12,16 @@ contains inaccurate or out-of-date information update the docs.
 
 ## Setup
 
+[Install uv], then install FaraX and its dependencies into a virtual environment and set
+up the pre-commit git hooks:
+
 ```bash
 uv sync --all-groups
 uv run pre-commit install
 ```
+
+Preface commands with `uv run` to use the virtual environment, or activate it with
+`source .venv/bin/activate`.
 
 ## Running the app
 
@@ -172,3 +178,4 @@ uv run mkdocs serve              # preview the documentation
     - [0003 Raw Files are kept in a File Store, not the database](../adr/0003-raw-files-in-file-store.md)
 
 [WhiteNoise]: https://whitenoise.readthedocs.io/
+[Install uv]: https://docs.astral.sh/uv/getting-started/installation/

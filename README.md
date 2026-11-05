@@ -1,147 +1,43 @@
 # FaraX
 
-A data management platform for systhesisability in data-driven materials discovery.
+A data management platform for synthesisability in data-driven materials discovery. It
+ingests, validates, stores and visualises research data.
 
 FaraX is a [Django] web application that uses [uv] for packaging and dependency
-management.
-It provides [`pre-commit`][pre-commit] hooks for various linters
-and formatters and automated tests using [`pytest`][pytest] and [GitHub Actions].
-Pre-commit hooks are automatically kept updated with a dedicated GitHub Action, this can
-be removed and replaced with [pre-commit.ci] if using a public repo. The package version
-is dynamically generated from the most recent git tag using
-[`setuptools-scm`][setuptools-scm].
+management. It was developed by the [Imperial College Research Software Engineering
+Team].
 
-It was developed by the [Imperial College Research Software Engineering Team].
+## Quick start
 
-## Usage
+With [uv installed][Download and install uv], run FaraX locally with SQLite and log in
+at `http://127.0.0.1:8000/admin/`:
 
-To get started:
+```bash
+uv sync --all-groups
+uv run python manage.py migrate
+uv run python manage.py createsuperuser
+uv run python manage.py runserver
+```
 
-1. [Download and install uv] following the instructions for your OS.
-1. Activate a git repository (required for `pre-commit` and the package versioning with
-    `setuptools-scm`):
+Or, with only [Docker] installed, run FaraX with PostgreSQL:
 
-    ```bash
-    git init
-    ```
+```bash
+cp .env.example .env
+docker compose up
+docker compose exec web python manage.py createsuperuser  # in another terminal
+```
 
-1. Install the package and dependencies and set up the virtual environment:
+Run the tests with `uv run pytest`.
 
-    ```bash
-    uv sync --all-groups
-    ```
+## Documentation
 
-1. Activate the virtual environment, or just preface your commands with `uv run` to use
-    the virtual environment (see [uv activate] for more info):
-
-    ```bash
-    source .venv/bin/activate
-    <command>
-    ```
-
-    or
-
-    ```bash
-    uv run <command>
-    ```
-
-1. Install the pre-commit git hooks:
-
-    ```bash
-    uv run pre-commit install
-    ```
-
-1. Update the pre-commit hooks
-
-    ```bash
-    uv run pre-commit autoupdate
-    ```
-
-1. Create the database tables. With no configuration, data is stored in SQLite in the
-    git-ignored `db/` directory:
-
-    ```bash
-    uv run python manage.py migrate
-    ```
-
-    To use PostgreSQL instead, set the `POSTGRES_*` environment variables documented in
-    `.env.example` (see the developer guide).
-
-1. Create a superuser account to log in to the Django admin:
-
-    ```bash
-    uv run python manage.py createsuperuser
-    ```
-
-1. Run the development server and log in at `http://127.0.0.1:8000/admin/`:
-
-    ```bash
-    uv run python manage.py runserver
-    ```
-
-1. Run the tests:
-
-    ```bash
-    uv run pytest
-    ```
-
-1. Create an initial commit (it's possible there might be some failures in pre-commit):
-
-    ```bash
-    git add .
-    git commit -m "Initial commit"
-    ```
-
-## Running with Docker Compose
-
-With only [Docker] installed, you can run FaraX with PostgreSQL using Docker Compose.
-Source code changes reload the development server automatically, and the database and
-File Store are kept on named volumes.
-
-1. Create the git-ignored `.env` file. The example values work as they are:
-
-    ```bash
-    cp .env.example .env
-    ```
-
-1. Start the web app and PostgreSQL:
-
-    ```bash
-    docker compose up
-    ```
-
-1. In another terminal, create a superuser (migrations are applied when the stack
-    starts):
-
-    ```bash
-    docker compose exec web python manage.py createsuperuser
-    ```
-
-1. Log in at `http://127.0.0.1:8000/admin/`.
-
-1. Stop the stack with `docker compose down`. Add `-v` to also delete the database and
-    File Store volumes.
-
-See the developer guide for more details.
-
-## Updating Dependencies
-
-Use the commands `uv add <package>` and `uv remove <package>` to add or remove dependencies.
-
-- Use the optional flag `--dev` to add/remove development dependencies.
-- Include the optional flag `--group <group-name>` to add/remove dependencies from specific groups.
-- These will automatically update the `pyproject.toml` file.
-
-For further information, see the [uv] docs for managing dependencies.
+The [Developer Guide] covers setup, running FaraX against
+PostgreSQL and with Docker Compose, production settings and environment variables, the
+architecture and the project's conventions.
 
 [Django]: https://www.djangoproject.com/
+[Developer Guide]: https://github.com/ImperialCollegeLondon/FaraX/blob/main/docs/developer/index.md
 [Docker]: https://docs.docker.com/get-started/get-docker/
 [uv]: https://docs.astral.sh/uv
-[pre-commit]: https://pre-commit.com/
-[pytest]: https://pytest.org/
-[GitHub Actions]: https://github.com/features/actions
-[pre-commit.ci]: https://pre-commit.ci
-[setuptools-scm]: https://setuptools-scm.readthedocs.io/en/latest/
 [Imperial College Research Software Engineering Team]: https://www.imperial.ac.uk/admin-services/ict/self-service/research-support/rcs/service-offering/research-software-engineering/
 [Download and install uv]: https://docs.astral.sh/uv/getting-started/installation/
-[uv activate]: https://docs.astral.sh/uv/pip/environments/
