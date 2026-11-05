@@ -16,8 +16,7 @@ uv run mypy .                        # type check
 uv run ruff check --fix . && uv run ruff format .
 uv run pre-commit run --all-files    # all linters
 uv run mkdocs build --strict         # docs (needs the `doc` group)
-docker compose up                    # web + postgres:18 stack (needs `.env` from `.env.example`)
-docker compose exec web python manage.py migrate   # migrations aren't run automatically
+docker compose up                    # web + postgres:18 stack, runs migrations (needs `.env` from `.env.example`)
 ```
 
 CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18` service), and a strict mkdocs build.

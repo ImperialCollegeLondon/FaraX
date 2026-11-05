@@ -110,10 +110,10 @@ File Store are kept on named volumes.
     docker compose up
     ```
 
-1. In another terminal, create the database tables and a superuser:
+1. In another terminal, create a superuser (migrations are applied when the stack
+    starts):
 
     ```bash
-    docker compose exec web python manage.py migrate
     docker compose exec web python manage.py createsuperuser
     ```
 

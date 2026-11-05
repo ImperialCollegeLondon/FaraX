@@ -52,8 +52,8 @@ Treat PostgreSQL results as authoritative: some behaviour differs silently on SQ
 Docker Compose runs the full base stack, the web app and PostgreSQL 18, with nothing
 installed but Docker. `docker-compose.yml` defines two services:
 
-- `web`, built from the `Dockerfile`, runs Django's development server at
-  `http://127.0.0.1:8000/`. The repository is mounted into the container, so the server
+- `web`, built from the `Dockerfile`, applies any pending migrations and then runs
+  Django's development server at `http://127.0.0.1:8000/`. The repository is mounted into the container, so the server
   reloads when you edit the source code. Rebuild the image (`docker compose build`)
   only after changing dependencies.
 - `postgres` runs PostgreSQL 18.
@@ -67,11 +67,11 @@ cp .env.example .env     # once; the example values work as they are
 docker compose up        # start the stack (add -d to run it in the background)
 ```
 
-Migrations aren't run automatically. In another terminal, run them and create a
-superuser, then log in at `http://127.0.0.1:8000/admin/`:
+Migrations are applied each time the `web` service starts; restart it
+(`docker compose restart web`) to apply migrations added while it is running. In
+another terminal, create a superuser, then log in at `http://127.0.0.1:8000/admin/`:
 
 ```bash
-docker compose exec web python manage.py migrate
 docker compose exec web python manage.py createsuperuser
 ```
 
