@@ -39,9 +39,10 @@ importing Django's built-in `User`.
 ## Database
 
 Local development uses SQLite with no configuration. Production and CI use PostgreSQL
-(see [ADR 0002](../adr/0002-postgresql-with-sqlite-for-local-development.md)), selected
-in `farax/settings.py` when the `POSTGRES_*` environment variables documented in
-`.env.example` are set. Django connects to PostgreSQL through psycopg.
+(see [ADR 0002](../adr/0002-postgresql-with-sqlite-for-local-development.md)). The base
+settings (`farax/settings/base.py`) switch to PostgreSQL when `POSTGRES_DB` is set; the
+other `POSTGRES_*` variables documented in `.env.example` have defaults. The production
+settings require all of them. Django connects to PostgreSQL through psycopg.
 
 ## Settings
 

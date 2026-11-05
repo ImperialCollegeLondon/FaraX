@@ -3,7 +3,7 @@
 PostgreSQL is the production database, chosen for its native `jsonb` support for storing
 most data and schemas. CI runs the test suite against PostgreSQL only. For convenience,
 local development outside Docker defaults to SQLite and switches to PostgreSQL when the
-`POSTGRES_*` environment variables are set. Docker Compose always uses PostgreSQL.
+`POSTGRES_DB` environment variable is set. Docker Compose always uses PostgreSQL.
 
 SQLite support is a convenience, not a requirement. Through the Django ORM its JSON
 support is broadly equivalent to PostgreSQL's, but it lacks the `contains` and
