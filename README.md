@@ -92,6 +92,38 @@ To get started:
     git commit -m "Initial commit"
     ```
 
+## Running with Docker Compose
+
+With only [Docker] installed, you can run FaraX with PostgreSQL using Docker Compose.
+Source code changes reload the development server automatically, and the database and
+File Store are kept on named volumes.
+
+1. Create the git-ignored `.env` file. The example values work as they are:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+1. Start the web app and PostgreSQL:
+
+    ```bash
+    docker compose up
+    ```
+
+1. In another terminal, create the database tables and a superuser:
+
+    ```bash
+    docker compose exec web python manage.py migrate
+    docker compose exec web python manage.py createsuperuser
+    ```
+
+1. Log in at <http://127.0.0.1:8000/admin/>.
+
+1. Stop the stack with `docker compose down`. Add `-v` to also delete the database and
+    File Store volumes.
+
+See the developer guide for more details.
+
 ## Updating Dependencies
 
 Use the commands `uv add <package>` and `uv remove <package>` to add or remove dependencies.
@@ -103,6 +135,7 @@ Use the commands `uv add <package>` and `uv remove <package>` to add or remove d
 For further information, see the [uv] docs for managing dependencies.
 
 [Django]: https://www.djangoproject.com/
+[Docker]: https://docs.docker.com/get-started/get-docker/
 [uv]: https://docs.astral.sh/uv
 [pre-commit]: https://pre-commit.com/
 [pytest]: https://pytest.org/

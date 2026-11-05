@@ -47,6 +47,52 @@ docker stop farax-postgres
 
 Treat PostgreSQL results as authoritative: some behaviour differs silently on SQLite.
 
+### Running with Docker Compose
+
+Docker Compose runs the full base stack, the web app and PostgreSQL 18, with nothing
+installed but Docker. `compose.yaml` defines two services:
+
+- `web`, built from the `Dockerfile`, runs Django's development server at
+  <http://127.0.0.1:8000/>. The repository is mounted into the container, so the server
+  reloads when you edit the source code. Rebuild the image (`docker compose build`)
+  only after changing dependencies.
+- `postgres` runs PostgreSQL 18.
+
+Both read the git-ignored `.env` file, created from `.env.example`. The database and the
+File Store are kept on the named volumes `postgres` and `media`, so their contents
+survive `docker compose down`. Use `docker compose down -v` to delete them.
+
+```bash
+cp .env.example .env     # once; the example values work as they are
+docker compose up        # start the stack (add -d to run it in the background)
+```
+
+Migrations aren't run automatically. In another terminal, run them and create a
+superuser, then log in at <http://127.0.0.1:8000/admin/>:
+
+```bash
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+```
+
+Other management commands run the same way with `docker compose exec web python
+manage.py <command>`. The image installs the runtime dependencies and FaraX itself from
+`uv.lock`, without editable mode and without the development tools, so run the tests
+and linters on the host with uv.
+
+The container has no `.git` directory, so `setuptools-scm` can't work out the version
+and `farax.__version__` is `0.0.0` in the image. Pass the real version when building if
+it matters:
+
+```bash
+docker compose build --build-arg FARAX_VERSION=$(git describe --tags)
+```
+
+The container runs as a user with UID 1000, matching the first user on most Linux
+machines, so files it creates in the mounted source tree (for example with
+`makemigrations`) belong to you. If your UID differs, build with
+`--build-arg UID=$(id -u)`.
+
 ## Production settings
 
 Production deployments use the production settings, which extend the base settings:
@@ -83,7 +129,7 @@ uv run python manage.py check --deploy  # Django's deployment checks
 
 Raw Files are kept in the File Store (see
 [ADR 0003](../adr/0003-raw-files-in-file-store.md)), which is the git-ignored `media/`
-directory in every configuration.
+directory unless `DJANGO_MEDIA_ROOT` points somewhere else.
 
 ## Common tasks
 

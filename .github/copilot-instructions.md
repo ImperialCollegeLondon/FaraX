@@ -16,6 +16,8 @@ uv run mypy .                        # type check
 uv run ruff check --fix . && uv run ruff format .
 uv run pre-commit run --all-files    # all linters
 uv run mkdocs build --strict         # docs (needs the `doc` group)
+docker compose up                    # web + postgres:18 stack (needs `.env` from `.env.example`)
+docker compose exec web python manage.py migrate   # migrations aren't run automatically
 ```
 
 CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18` service), and a strict mkdocs build.
@@ -42,9 +44,15 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18`
 - **Database**: PostgreSQL is the production database and CI runs the tests against it
   only. SQLite (in git-ignored `db/`) is tolerated for local development only and is
   used when `POSTGRES_DB` is unset; the `POSTGRES_*` variables are documented in
-  `.env.example` (there is no dotenv dependency; `.env` is git-ignored). Don't add
+  `.env.example` (there is no dotenv dependency; `.env` is git-ignored and loaded only
+  by Docker Compose). Don't add
   SQLite-specific code paths or skip tests for SQLite: if a PostgreSQL-only feature is
   needed, drop SQLite support rather than work around it.
+- **Docker**: `Dockerfile` and `compose.yaml` are for development only (production
+  Compose waits for the hosting target). The image installs runtime dependencies from
+  `uv.lock` without editable mode into `/opt/venv`; Compose mounts the repository at
+  `/app` and keeps PostgreSQL data and the File Store (`DJANGO_MEDIA_ROOT`) on named
+  volumes. Files needed in the image must be allowed in the `.dockerignore` allowlist.
 - **Strict typing**: mypy forbids explicit `Any`, bare generics, and untyped defs (tests
   are exempt from the untyped-defs rule only). Instead of reaching for any `Any`
   consider `object` as an alternative. Whilst the default settings are strict, it may be
