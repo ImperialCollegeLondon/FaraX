@@ -18,7 +18,7 @@ uv run pre-commit run --all-files    # all linters
 uv run mkdocs build --strict         # docs (needs the `doc` group)
 ```
 
-CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest`, and a strict mkdocs build.
+CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18` service), and a strict mkdocs build.
 
 ## Conventions
 
@@ -39,9 +39,12 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest`, and a strict mkdocs bui
 - **File Store**: Raw Files are kept unchanged in the File Store, the default storage
   in `STORAGES` (git-ignored `media/`). Access it through Django's storage API, never
   by file paths, and never store Raw Files in the database.
-- **Database**: PostgreSQL is the production database; SQLite (in git-ignored `db/`) is
-  tolerated for local development only. Don't add SQLite-specific code paths or skip
-  tests for SQLite; if a PostgreSQL-only feature is needed, SQLite support is dropped.
+- **Database**: PostgreSQL is the production database and CI runs the tests against it
+  only. SQLite (in git-ignored `db/`) is tolerated for local development only and is
+  used when `POSTGRES_DB` is unset; the `POSTGRES_*` variables are documented in
+  `.env.example` (there is no dotenv dependency; `.env` is git-ignored). Don't add
+  SQLite-specific code paths or skip tests for SQLite: if a PostgreSQL-only feature is
+  needed, drop SQLite support rather than work around it.
 - **Strict typing**: mypy forbids explicit `Any`, bare generics, and untyped defs (tests
   are exempt from the untyped-defs rule only). Instead of reaching for any `Any`
   consider `object` as an alternative. Whilst the default settings are strict, it may be

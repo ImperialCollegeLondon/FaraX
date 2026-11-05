@@ -64,6 +64,9 @@ To get started:
     uv run python manage.py migrate
     ```
 
+    To use PostgreSQL instead, set the `POSTGRES_*` environment variables documented in
+    `.env.example` (see the developer guide).
+
 1. Create a superuser account to log in to the Django admin:
 
     ```bash
