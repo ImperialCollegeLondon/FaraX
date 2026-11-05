@@ -34,11 +34,12 @@ for name in (
 
 # Static files are collected into STATIC_ROOT with `collectstatic` and served by
 # WhiteNoise, so no separate web server configuration is needed.
-MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
+# WhiteNoise must come directly after SecurityMiddleware.
+MIDDLEWARE = list(MIDDLEWARE)  # noqa: F405
+MIDDLEWARE.insert(
+    MIDDLEWARE.index("django.middleware.security.SecurityMiddleware") + 1,
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    *MIDDLEWARE[1:],  # noqa: F405
-]
+)
 STORAGES = {
     **STORAGES,  # noqa: F405
     "staticfiles": {
