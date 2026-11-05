@@ -27,7 +27,7 @@ uv run python manage.py createsuperuser  # create an account for the Django admi
 uv run python manage.py runserver        # serve the app at http://127.0.0.1:8000/
 ```
 
-The Django admin is at <http://127.0.0.1:8000/admin/>. After changing models, generate
+The Django admin is at `http://127.0.0.1:8000/admin/`. After changing models, generate
 a migration with `uv run python manage.py makemigrations` and commit it.
 
 ### Running against PostgreSQL
@@ -53,7 +53,7 @@ Docker Compose runs the full base stack, the web app and PostgreSQL 18, with not
 installed but Docker. `compose.yaml` defines two services:
 
 - `web`, built from the `Dockerfile`, runs Django's development server at
-  <http://127.0.0.1:8000/>. The repository is mounted into the container, so the server
+  `http://127.0.0.1:8000/`. The repository is mounted into the container, so the server
   reloads when you edit the source code. Rebuild the image (`docker compose build`)
   only after changing dependencies.
 - `postgres` runs PostgreSQL 18.
@@ -68,7 +68,7 @@ docker compose up        # start the stack (add -d to run it in the background)
 ```
 
 Migrations aren't run automatically. In another terminal, run them and create a
-superuser, then log in at <http://127.0.0.1:8000/admin/>:
+superuser, then log in at `http://127.0.0.1:8000/admin/`:
 
 ```bash
 docker compose exec web python manage.py migrate

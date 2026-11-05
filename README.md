@@ -73,7 +73,7 @@ To get started:
     uv run python manage.py createsuperuser
     ```
 
-1. Run the development server and log in at <http://127.0.0.1:8000/admin/>:
+1. Run the development server and log in at `http://127.0.0.1:8000/admin/`:
 
     ```bash
     uv run python manage.py runserver
@@ -117,7 +117,7 @@ File Store are kept on named volumes.
     docker compose exec web python manage.py createsuperuser
     ```
 
-1. Log in at <http://127.0.0.1:8000/admin/>.
+1. Log in at `http://127.0.0.1:8000/admin/`.
 
 1. Stop the stack with `docker compose down`. Add `-v` to also delete the database and
     File Store volumes.
