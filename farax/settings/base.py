@@ -121,6 +121,23 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
+# Storage
+# https://docs.djangoproject.com/en/6.1/ref/settings/#storages
+
+# The default storage is the File Store, where Raw Files are kept unchanged (see ADR
+# 0003). It is a git-ignored directory on the local file system.
+MEDIA_ROOT = BASE_DIR / "media"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 

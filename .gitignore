@@ -136,3 +136,6 @@ db/*
 
 # Static files collected by collectstatic
 /staticfiles/
+
+# File Store for Raw Files
+/media/

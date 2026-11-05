@@ -39,9 +39,7 @@ MIDDLEWARE = [
     *MIDDLEWARE[1:],  # noqa: F405
 ]
 STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
+    **STORAGES,  # noqa: F405
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
