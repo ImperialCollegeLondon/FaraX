@@ -22,7 +22,7 @@ media/           git-ignored File Store, where Raw Files are kept
 staticfiles/     git-ignored static files, written by `collectstatic`
 tests/           the test suite, run with pytest and pytest-django
 Dockerfile       image for the development Docker Compose stack
-compose.yaml     development Docker Compose stack: the web app and PostgreSQL
+docker-compose.yml  development Docker Compose stack: the web app and PostgreSQL
 ```
 
 The `farax` package also provides `farax.__version__`, derived from git tags by

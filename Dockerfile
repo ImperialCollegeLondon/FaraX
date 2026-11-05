@@ -1,4 +1,4 @@
-# Image for running FaraX in development with Docker Compose (see compose.yaml).
+# Image for running FaraX in development with Docker Compose (see docker-compose.yml).
 FROM python:3.14-slim
 
 COPY --from=ghcr.io/astral-sh/uv:0.13 /uv /uvx /bin/

@@ -48,7 +48,7 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18`
   by Docker Compose). Don't add
   SQLite-specific code paths or skip tests for SQLite: if a PostgreSQL-only feature is
   needed, drop SQLite support rather than work around it.
-- **Docker**: `Dockerfile` and `compose.yaml` are for development only (production
+- **Docker**: `Dockerfile` and `docker-compose.yml` are for development only (production
   Compose waits for the hosting target). The image installs runtime dependencies from
   `uv.lock` without editable mode into `/opt/venv`; Compose mounts the repository at
   `/app` and keeps PostgreSQL data and the File Store (`DJANGO_MEDIA_ROOT`) on named

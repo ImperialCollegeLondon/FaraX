@@ -50,7 +50,7 @@ Treat PostgreSQL results as authoritative: some behaviour differs silently on SQ
 ### Running with Docker Compose
 
 Docker Compose runs the full base stack, the web app and PostgreSQL 18, with nothing
-installed but Docker. `compose.yaml` defines two services:
+installed but Docker. `docker-compose.yml` defines two services:
 
 - `web`, built from the `Dockerfile`, runs Django's development server at
   `http://127.0.0.1:8000/`. The repository is mounted into the container, so the server
