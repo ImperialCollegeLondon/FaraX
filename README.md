@@ -31,12 +31,11 @@ Run the tests with `uv run pytest`.
 
 ## Documentation
 
-The [Developer Guide] covers setup, running FaraX against
-PostgreSQL and with Docker Compose, production settings and environment variables, the
+The Developer Guide (`docs/developer/`, also in the built documentation) covers setup,
+running FaraX against PostgreSQL and with Docker Compose, production settings and environment variables, the
 architecture and the project's conventions.
 
 [Django]: https://www.djangoproject.com/
-[Developer Guide]: https://github.com/ImperialCollegeLondon/FaraX/blob/main/docs/developer/index.md
 [Docker]: https://docs.docker.com/get-started/get-docker/
 [uv]: https://docs.astral.sh/uv
 [Imperial College Research Software Engineering Team]: https://www.imperial.ac.uk/admin-services/ict/self-service/research-support/rcs/service-offering/research-software-engineering/

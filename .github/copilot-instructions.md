@@ -52,5 +52,6 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18`
   architectures, convoluted abstractions and software engineering jargon.
 - Unless stated otherwise implementation should be carried out in feature branches off
   of `main`.
+- Prefer using lighter weight models for implementation.
 
 [uv]: https://docs.astral.sh/uv
