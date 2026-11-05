@@ -1,12 +1,15 @@
 # Copilot Instructions
 
-FaraX is a small Python (>=3.14) package scaffold, managed with [uv], for a data management platform for materials discovery. The package lives in `farax/` (entry point `farax/__main__.py`); the version is derived from git tags via `setuptools-scm`, so `farax.__version__` only exists when the package is installed in the environment.
+FaraX is a Django web application (Python >=3.14), managed with [uv], for a data management platform for materials discovery. It is a single Django project at the repository root, generated with `django-admin`: `manage.py`, the project package `farax/` (settings, root URLs, ASGI/WSGI) and a single app `main/` (models, admin, migrations). The version is derived from git tags via `setuptools-scm`, so `farax.__version__` only exists when the package is installed in the environment. See `docs/developer/architecture.md` for the layout.
 
 ## Build, test, lint
 
 ```bash
 uv sync --all-groups                 # install everything (CI uses `uv sync`, docs use `--group doc`)
-uv run python -m farax               # run the app
+uv run python manage.py migrate      # create/update the local SQLite database in db/
+uv run python manage.py createsuperuser  # account for the admin at /admin/
+uv run python manage.py runserver    # run the app (no configuration needed)
+uv run python manage.py makemigrations   # after changing models; commit the migration
 uv run pytest                        # full suite (coverage + doctests enabled via addopts)
 uv run pytest tests/test_farax.py::test_version   # single test
 uv run mypy .                        # type check
@@ -19,6 +22,17 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest`, and a strict mkdocs bui
 
 ## Conventions
 
+- **Django**: `main.User` (subclass of `AbstractUser`) is the auth user model; refer to
+  it via `get_user_model()` or `settings.AUTH_USER_MODEL`. mypy uses the django-stubs
+  plugin and pytest uses pytest-django (settings `farax.settings`); prefer testing
+  through the Django test client (`client`, `admin_client`, `django_user_model`
+  fixtures). Generated migrations are excluded from ruff and coverage. New apps or
+  packages must be added to `[tool.setuptools] packages` and the pytest `--cov` targets.
+  The pre-commit mypy hook runs in its own environment, so packages needed for type
+  checking must also be listed in its `additional_dependencies`.
+- **Database**: PostgreSQL is the production database; SQLite (in git-ignored `db/`) is
+  tolerated for local development only. Don't add SQLite-specific code paths or skip
+  tests for SQLite; if a PostgreSQL-only feature is needed, SQLite support is dropped.
 - **Strict typing**: mypy forbids explicit `Any`, bare generics, and untyped defs (tests
   are exempt from the untyped-defs rule only). Instead of reaching for any `Any`
   consider `object` as an alternative. Whilst the default settings are strict, it may be
@@ -29,7 +43,7 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest`, and a strict mkdocs bui
   modules, classes and functions, including `__init__.py` and new modules (only `tests/`
   is exempt from D100/D104).
 - **Doctests run**: pytest uses `--doctest-modules`, so examples in docstrings are
-  executed (`farax/__main__.py` and `docs/` are ignored).
+  executed (`docs/` is ignored).
 - **Docs**: API reference pages are generated from docstrings by `docs/gen_ref_nav.py`
   (mkdocs-gen-files + mkdocstrings), so docstrings are user-facing.
 - Markdown must pass markdownlint (`.markdownlint.yaml`); spelling checked by codespell
