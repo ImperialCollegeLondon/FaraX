@@ -17,6 +17,19 @@ uv sync --all-groups
 uv run pre-commit install
 ```
 
+## Running the app
+
+With no configuration FaraX uses SQLite, stored in the git-ignored `db/` directory.
+
+```bash
+uv run python manage.py migrate          # create or update the database tables
+uv run python manage.py createsuperuser  # create an account for the Django admin
+uv run python manage.py runserver        # serve the app at http://127.0.0.1:8000/
+```
+
+The Django admin is at <http://127.0.0.1:8000/admin/>. After changing models, generate
+a migration with `uv run python manage.py makemigrations` and commit it.
+
 ## Common tasks
 
 ```bash
@@ -28,7 +41,7 @@ uv run mkdocs serve              # preview the documentation
 
 ## Contents
 
-- [Architecture](architecture.md): structure of the `farax` package.
+- [Architecture](architecture.md): layout of the Django project and its app.
 - [Contributing](contributing.md): the contribution workflow.
 - Architecture decision records:
     - [0001 Single repository for all components](../adr/0001-single-repository.md)

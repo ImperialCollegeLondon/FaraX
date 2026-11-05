@@ -2,7 +2,8 @@
 
 A data management platform for systhesisability in data-driven materials discovery.
 
-This is a Python application that uses [uv] for packaging and dependency management.
+FaraX is a [Django] web application that uses [uv] for packaging and dependency
+management.
 It provides [`pre-commit`][pre-commit] hooks for various linters
 and formatters and automated tests using [`pytest`][pytest] and [GitHub Actions].
 Pre-commit hooks are automatically kept updated with a dedicated GitHub Action, this can
@@ -56,10 +57,23 @@ To get started:
     uv run pre-commit autoupdate
     ```
 
-1. Run the main app:
+1. Create the database tables. With no configuration, data is stored in SQLite in the
+    git-ignored `db/` directory:
 
     ```bash
-    uv run python -m farax
+    uv run python manage.py migrate
+    ```
+
+1. Create a superuser account to log in to the Django admin:
+
+    ```bash
+    uv run python manage.py createsuperuser
+    ```
+
+1. Run the development server and log in at <http://127.0.0.1:8000/admin/>:
+
+    ```bash
+    uv run python manage.py runserver
     ```
 
 1. Run the tests:
@@ -85,6 +99,7 @@ Use the commands `uv add <package>` and `uv remove <package>` to add or remove d
 
 For further information, see the [uv] docs for managing dependencies.
 
+[Django]: https://www.djangoproject.com/
 [uv]: https://docs.astral.sh/uv
 [pre-commit]: https://pre-commit.com/
 [pytest]: https://pytest.org/
