@@ -47,6 +47,44 @@ docker stop farax-postgres
 
 Treat PostgreSQL results as authoritative: some behaviour differs silently on SQLite.
 
+## Production settings
+
+Production deployments use the production settings, which extend the base settings:
+
+```bash
+export DJANGO_SETTINGS_MODULE=farax.settings.production
+```
+
+Debug mode is always off. The following environment variables are required, and Django
+refuses to start if any of them is missing (see also `.env.example`):
+
+| Variable | Purpose |
+| --- | --- |
+| `DJANGO_SECRET_KEY` | Django's secret key; a long random string kept out of git. |
+| `DJANGO_ALLOWED_HOSTS` | Comma-separated host names the site is served from. |
+| `POSTGRES_DB` | Name of the PostgreSQL database. |
+| `POSTGRES_USER` | PostgreSQL user to connect as. |
+| `POSTGRES_PASSWORD` | Password of the PostgreSQL user. |
+| `POSTGRES_HOST` | Address of the PostgreSQL server. |
+| `POSTGRES_PORT` | Port of the PostgreSQL server. |
+
+The production settings expect a reverse proxy in front of the app that terminates HTTPS
+and sets the `X-Forwarded-Proto` header. Requests over plain HTTP are redirected to
+HTTPS.
+
+Static files, such as the Django admin's stylesheets, are served by the app itself
+through [WhiteNoise]. Collect them into the git-ignored `staticfiles/` directory before
+starting the app:
+
+```bash
+uv run python manage.py collectstatic --no-input
+uv run python manage.py check --deploy  # Django's deployment checks
+```
+
+Raw Files are kept in the File Store (see
+[ADR 0003](../adr/0003-raw-files-in-file-store.md)), which is the git-ignored `media/`
+directory in every configuration.
+
 ## Common tasks
 
 ```bash
@@ -64,3 +102,5 @@ uv run mkdocs serve              # preview the documentation
     - [0001 Single repository for all components](../adr/0001-single-repository.md)
     - [0002 PostgreSQL in production, SQLite tolerated for local development](../adr/0002-postgresql-with-sqlite-for-local-development.md)
     - [0003 Raw Files are kept in a File Store, not the database](../adr/0003-raw-files-in-file-store.md)
+
+[WhiteNoise]: https://whitenoise.readthedocs.io/
