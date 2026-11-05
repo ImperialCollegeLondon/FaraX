@@ -1,0 +1,8 @@
+dirs:
+  - .
+useGitIgnore: true
+ignorePatterns:
+  # Local development server URLs aren't reachable from CI.
+  - pattern: ^https?://(127\.0\.0\.1|localhost)([:/].*)?$
+  # The repository is private, so the link checker gets a 404.
+  - pattern: ^https://github\.com/ImperialCollegeLondon/FaraX([/#].*)?$

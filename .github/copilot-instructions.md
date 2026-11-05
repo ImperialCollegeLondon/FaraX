@@ -8,19 +8,15 @@ The developer documentation in `docs/developer/` is the reference for how the pr
 
 ```bash
 uv sync --all-groups                 # install everything (CI uses `uv sync`, docs use `--group doc`)
-uv run python manage.py migrate      # create/update the local SQLite database in db/
-uv run python manage.py createsuperuser  # account for the admin at /admin/
-uv run python manage.py runserver    # run the app (no configuration needed)
-uv run python manage.py makemigrations   # after changing models; commit the migration
 uv run pytest                        # full suite (coverage + doctests enabled via addopts)
 uv run pytest tests/test_farax.py::test_version   # single test
 uv run mypy .                        # type check
 uv run ruff check --fix . && uv run ruff format .
 uv run pre-commit run --all-files    # all linters
 uv run mkdocs build --strict         # docs (needs the `doc` group)
-docker compose up                    # web + postgres:18 stack, runs migrations (needs `.env` from `.env.example`)
 ```
 
+Running the app, PostgreSQL and Docker Compose are covered in `docs/developer/index.md`.
 CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18` service), and a strict mkdocs build.
 
 ## Conventions
@@ -47,11 +43,21 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18`
 - The project directory may also contain an AGENTS.local.md. The file is git ignored and
   provides developer preferences for the current session.
 - This project is a collaboration between research software engineers and domain
-  experts. Our approach combines software engineering best practices and domain
-  expertise. Correctness and reproducibility are key concerns. We avoid complex
-  architectures, convoluted abstractions and software engineering jargon.
-- Unless stated otherwise implementation should be carried out in feature branches off
-  of `main`.
-- Prefer using lighter weight models for implementation.
+  experts. We avoid complex architectures, convoluted abstractions and software
+  engineering jargon.
+- When reviewing, check changes against `docs/developer/conventions.md` as well as the
+  rules here.
+
+## Agent workflow
+
+- Implement in feature branches off `main`, each in its own git worktree, keeping the
+  developer's checkout untouched. Stage files by path (`git add <paths>`).
+- Implement with lighter-weight models (not Opus). Review with a model from a different
+  vendor to the implementer, e.g. review Anthropic models with OpenAI models.
+- For a spec split into tickets: open a feature PR from the integration branch to `main`
+  carrying the `Closes` keywords. Give each ticket its own PR against the integration
+  branch, or against its blocker's branch while that blocker is unmerged (stacked PRs).
+  The developer reviews and merges ticket PRs; merge directly rather than through a
+  merge subagent.
 
 [uv]: https://docs.astral.sh/uv
