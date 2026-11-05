@@ -44,3 +44,10 @@ repos:
     rev: v0.9.3
     hooks:
       - id: taplo-format
+  - repo: local
+    hooks:
+      - id: docker-compose-file-name
+        name: Docker Compose file is named docker-compose.yml
+        entry: Name the Docker Compose file docker-compose.yml
+        language: fail
+        files: (^|/)(compose\.ya?ml|docker-compose\.yaml)$

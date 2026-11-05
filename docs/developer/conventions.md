@@ -45,9 +45,17 @@ Document every new environment variable in `.env.example` and in the
 ## Docker
 
 `Dockerfile` and `docker-compose.yml` are for development only; production Compose waits
-until the hosting target is decided. The container must never create files in the
-mounted source tree (see [Running with Docker Compose](index.md#running-with-docker-compose)).
-Files needed in the image must be allowed in the `.dockerignore` allowlist.
+until the hosting target is decided. Name Compose files `docker-compose.yml` (a
+pre-commit hook checks this). Containers run as `nobody` and mount the source tree
+read-only, so they never create files in it (see
+[Running with Docker Compose](index.md#running-with-docker-compose)). Files needed in the
+image must be allowed in the `.dockerignore` allowlist.
+
+## Documentation
+
+Each fact has one home. The README is a short overview and quick start that links to the
+Developer Guide; detail lives in `docs/developer/`, and other pages link to it rather than
+repeating it.
 
 ## Dependencies
 
