@@ -30,3 +30,7 @@ uv run mkdocs serve              # preview the documentation
 
 - [Architecture](architecture.md): structure of the `farax` package.
 - [Contributing](contributing.md): the contribution workflow.
+- Architecture decision records:
+    - [0001 Single repository for all components](../adr/0001-single-repository.md)
+    - [0002 PostgreSQL in production, SQLite tolerated for local development](../adr/0002-postgresql-with-sqlite-for-local-development.md)
+    - [0003 Raw Files are kept in a File Store, not the database](../adr/0003-raw-files-in-file-store.md)
