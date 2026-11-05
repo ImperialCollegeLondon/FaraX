@@ -7,7 +7,8 @@ startproject` and `startapp`, so it follows the standard Django layout.
 ```text
 manage.py        Django's command-line utility (migrate, runserver, createsuperuser, ...)
 farax/           the Django project package
-    settings.py  settings, suitable for local development
+    settings/    settings package; `farax.settings` loads the base settings
+        base.py  base settings, suitable for local development
     urls.py      root URL configuration; the admin is served at /admin/
     asgi.py      ASGI entry point
     wsgi.py      WSGI entry point

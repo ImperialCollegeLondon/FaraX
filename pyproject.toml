@@ -82,6 +82,6 @@ doc = [
 ]
 
 [tool.setuptools]
-packages = ["farax", "main", "main.migrations"]
+packages = ["farax", "farax.settings", "main", "main.migrations"]
 
 [tool.setuptools_scm]
