@@ -21,6 +21,8 @@ db/              git-ignored directory holding the local SQLite database
 media/           git-ignored File Store, where Raw Files are kept
 staticfiles/     git-ignored static files, written by `collectstatic`
 tests/           the test suite, run with pytest and pytest-django
+Dockerfile       image for the development Docker Compose stack
+compose.yaml     development Docker Compose stack: the web app and PostgreSQL
 ```
 
 The `farax` package also provides `farax.__version__`, derived from git tags by
@@ -55,7 +57,8 @@ app serves its own static files.
 Raw Files are kept unchanged in the File Store, not in the database (see
 [ADR 0003](../adr/0003-raw-files-in-file-store.md)). The File Store is the default
 storage in Django's `STORAGES` setting: a `FileSystemStorage` rooted in the git-ignored
-`media/` directory (`MEDIA_ROOT`). Code should save and read Raw Files through Django's
+`media/` directory (`MEDIA_ROOT`), or in the directory set by `DJANGO_MEDIA_ROOT`. Docker
+Compose keeps it on the named volume `media`. Code should save and read Raw Files through Django's
 storage API (`django.core.files.storage.default_storage` or a model `FileField`), so the
 File Store can later move to object storage by changing only the settings.
 
