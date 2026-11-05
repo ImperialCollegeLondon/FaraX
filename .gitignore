@@ -133,3 +133,6 @@ AGENTS.local.md
 # Local SQLite database
 db/*
 !db/.gitkeep
+
+# Static files collected by collectstatic
+/staticfiles/

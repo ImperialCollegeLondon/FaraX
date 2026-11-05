@@ -57,3 +57,31 @@ def test_settings_fail_to_load_when_a_required_variable_is_missing(missing):
     result = run_with_production_settings("manage.py", "check", env=env)
     assert result.returncode != 0
     assert f"KeyError: '{missing}'" in result.stderr
+
+
+SERVE_ADMIN_STATIC_FILE = """
+import sys
+
+import django
+
+django.setup()
+
+from django.core.management import call_command
+from django.templatetags.static import static
+from django.test import Client
+from django.test.utils import override_settings
+
+with override_settings(STATIC_ROOT=sys.argv[1]):
+    call_command("collectstatic", interactive=False, verbosity=0)
+    response = Client().get(static("admin/css/base.css"), secure=True)
+    print(response.status_code)
+"""
+
+
+def test_admin_static_files_are_collected_and_served(tmp_path):
+    """After collectstatic, the app itself serves the admin's static files."""
+    result = run_with_production_settings(
+        "-c", SERVE_ADMIN_STATIC_FILE, str(tmp_path / "static")
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "200"

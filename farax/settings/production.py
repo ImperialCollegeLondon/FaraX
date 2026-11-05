@@ -31,6 +31,22 @@ DATABASES = {
     }
 }
 
+# Static files are collected into STATIC_ROOT with `collectstatic` and served by
+# WhiteNoise, so no separate web server configuration is needed.
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    *MIDDLEWARE[1:],  # noqa: F405
+]
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 # HTTPS. The site is expected to sit behind a reverse proxy that terminates TLS and sets
 # the X-Forwarded-Proto header.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
