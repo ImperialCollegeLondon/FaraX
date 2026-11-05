@@ -28,13 +28,11 @@ RUN uv sync --locked --no-dev --no-install-project
 COPY . .
 RUN uv sync --locked --no-dev --no-editable
 
-# Run as an unprivileged user. The File Store directory is created here so the named
-# volume mounted over it is writable by that user.
-ARG UID=1000
-RUN useradd --uid ${UID} --no-create-home farax \
-    && mkdir -p /data/media \
-    && chown farax /data/media
-USER farax
+# Run as `nobody`, which owns no files on the host, so the container can't create files
+# in the mounted source tree. The File Store directory is created here and owned by
+# `nobody`, so the named volume mounted over it inherits that ownership and is writable.
+RUN mkdir -p /data/media && chown nobody:nogroup /data/media
+USER nobody
 
 EXPOSE 8000
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

@@ -76,8 +76,8 @@ another terminal, create a superuser, then log in at `http://127.0.0.1:8000/admi
 docker compose exec web python manage.py createsuperuser
 ```
 
-Other management commands run the same way with `docker compose exec web python
-manage.py <command>`. The image installs the runtime dependencies and FaraX itself from
+Other management commands that don't write to the source tree run the same way with
+`docker compose exec web python manage.py <command>`. The image installs the runtime dependencies and FaraX itself from
 `uv.lock`, without editable mode and without the development tools, so run the tests
 and linters on the host with uv.
 
@@ -89,10 +89,14 @@ it matters:
 docker compose build --build-arg FARAX_VERSION=$(git describe --tags)
 ```
 
-The container runs as a user with UID 1000, matching the first user on most Linux
-machines, so files it creates in the mounted source tree (for example with
-`makemigrations`) belong to you. If your UID differs, build with
-`--build-arg UID=$(id -u)`.
+The container runs as the unprivileged `nobody` user and never creates files in the
+mounted source tree: the mount is read-only and Python doesn't write bytecode
+(`PYTHONDONTWRITEBYTECODE`). Only the File Store volume is writable. Run commands that
+write to the source tree, such as `makemigrations`, on the host with uv:
+
+```bash
+uv run python manage.py makemigrations
+```
 
 ## Production settings
 
