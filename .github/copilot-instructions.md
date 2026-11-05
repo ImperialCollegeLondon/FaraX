@@ -30,6 +30,15 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest`, and a strict mkdocs bui
   packages must be added to `[tool.setuptools] packages` and the pytest `--cov` targets.
   The pre-commit mypy hook runs in its own environment, so packages needed for type
   checking must also be listed in its `additional_dependencies`.
+- **Settings**: `farax/settings/` is a package. `farax.settings` loads the base
+  settings (`base.py`, no configuration needed); `farax.settings.production` extends
+  them and requires `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS` and the `POSTGRES_*`
+  variables. Tests of the production settings run Django in a subprocess (see
+  `tests/test_production_settings.py`) so they don't affect the rest of the session.
+  Document new environment variables in `docs/developer/index.md` and `.env.example`.
+- **File Store**: Raw Files are kept unchanged in the File Store, the default storage
+  in `STORAGES` (git-ignored `media/`). Access it through Django's storage API, never
+  by file paths, and never store Raw Files in the database.
 - **Database**: PostgreSQL is the production database; SQLite (in git-ignored `db/`) is
   tolerated for local development only. Don't add SQLite-specific code paths or skip
   tests for SQLite; if a PostgreSQL-only feature is needed, SQLite support is dropped.
@@ -43,7 +52,7 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest`, and a strict mkdocs bui
   modules, classes and functions, including `__init__.py` and new modules (only `tests/`
   is exempt from D100/D104).
 - **Doctests run**: pytest uses `--doctest-modules`, so examples in docstrings are
-  executed (`docs/` is ignored).
+  executed (`docs/` and `farax/settings/production.py` are ignored).
 - **Docs**: API reference pages are generated from docstrings by `docs/gen_ref_nav.py`
   (mkdocs-gen-files + mkdocstrings), so docstrings are user-facing.
 - Markdown must pass markdownlint (`.markdownlint.yaml`); spelling checked by codespell

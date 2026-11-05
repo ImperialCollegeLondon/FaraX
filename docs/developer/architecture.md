@@ -9,6 +9,7 @@ manage.py        Django's command-line utility (migrate, runserver, createsuperu
 farax/           the Django project package
     settings/    settings package; `farax.settings` loads the base settings
         base.py  base settings, suitable for local development
+        production.py  production settings, configured by environment variables
     urls.py      root URL configuration; the admin is served at /admin/
     asgi.py      ASGI entry point
     wsgi.py      WSGI entry point
@@ -17,6 +18,8 @@ main/            the single Django app
     admin.py     Django admin registrations
     migrations/  database migrations, generated with `makemigrations`
 db/              git-ignored directory holding the local SQLite database
+media/           git-ignored File Store, where Raw Files are kept
+staticfiles/     git-ignored static files, written by `collectstatic`
 tests/           the test suite, run with pytest and pytest-django
 ```
 
@@ -36,4 +39,23 @@ importing Django's built-in `User`.
 Local development uses SQLite with no configuration. Production uses PostgreSQL (see
 [ADR 0002](../adr/0002-postgresql-with-sqlite-for-local-development.md)).
 
+## Settings
+
+The base settings (`farax.settings`) need no configuration and are used for local
+development and the tests. The production settings (`farax.settings.production`) extend
+them, turn debug mode off, and read the secret key, allowed hosts and PostgreSQL
+connection from environment variables (see
+[Production settings](index.md#production-settings)). They also add [WhiteNoise] so the
+app serves its own static files.
+
+## File Store
+
+Raw Files are kept unchanged in the File Store, not in the database (see
+[ADR 0003](../adr/0003-raw-files-in-file-store.md)). The File Store is the default
+storage in Django's `STORAGES` setting: a `FileSystemStorage` rooted in the git-ignored
+`media/` directory (`MEDIA_ROOT`). Code should save and read Raw Files through Django's
+storage API (`django.core.files.storage.default_storage` or a model `FileField`), so the
+File Store can later move to object storage by changing only the settings.
+
 [Django]: https://www.djangoproject.com/
+[WhiteNoise]: https://whitenoise.readthedocs.io/
