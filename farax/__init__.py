@@ -1,4 +1,4 @@
-"""The main module for FaraX."""
+"""The FaraX Django project: settings, root URLs and ASGI and WSGI entry points."""
 
 from contextlib import suppress
 from importlib.metadata import PackageNotFoundError, version

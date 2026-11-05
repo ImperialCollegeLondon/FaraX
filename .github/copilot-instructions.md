@@ -1,21 +1,27 @@
 # Copilot Instructions
 
-FaraX is a small Python (>=3.14) package scaffold, managed with [uv], for a data management platform for materials discovery. The package lives in `farax/` (entry point `farax/__main__.py`); the version is derived from git tags via `setuptools-scm`, so `farax.__version__` only exists when the package is installed in the environment.
+FaraX is a Django web application (Python >=3.14), managed with [uv], for a data management platform for materials discovery. It is a single Django project at the repository root: `manage.py`, the project package `farax/` and a single app `main/`.
+
+The developer documentation in `docs/developer/` is the reference for how the project works. Read it before changing Django code, settings, environment variables, the database, the File Store or Docker: `architecture.md` describes FaraX-specific design, `conventions.md` the rules for Django code, tests and Docker, and `index.md` how to run the app and its environment variables. Domain terms are defined in `GLOSSARY.md` and decisions recorded in `docs/adr/`.
 
 ## Build, test, lint
 
 ```bash
 uv sync --all-groups                 # install everything (CI uses `uv sync`, docs use `--group doc`)
-uv run python -m farax               # run the app
+uv run python manage.py migrate      # create/update the local SQLite database in db/
+uv run python manage.py createsuperuser  # account for the admin at /admin/
+uv run python manage.py runserver    # run the app (no configuration needed)
+uv run python manage.py makemigrations   # after changing models; commit the migration
 uv run pytest                        # full suite (coverage + doctests enabled via addopts)
 uv run pytest tests/test_farax.py::test_version   # single test
 uv run mypy .                        # type check
 uv run ruff check --fix . && uv run ruff format .
 uv run pre-commit run --all-files    # all linters
 uv run mkdocs build --strict         # docs (needs the `doc` group)
+docker compose up                    # web + postgres:18 stack, runs migrations (needs `.env` from `.env.example`)
 ```
 
-CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest`, and a strict mkdocs build.
+CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18` service), and a strict mkdocs build.
 
 ## Conventions
 
@@ -29,7 +35,7 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest`, and a strict mkdocs bui
   modules, classes and functions, including `__init__.py` and new modules (only `tests/`
   is exempt from D100/D104).
 - **Doctests run**: pytest uses `--doctest-modules`, so examples in docstrings are
-  executed (`farax/__main__.py` and `docs/` are ignored).
+  executed (`docs/` and `farax/settings/production.py` are ignored).
 - **Docs**: API reference pages are generated from docstrings by `docs/gen_ref_nav.py`
   (mkdocs-gen-files + mkdocstrings), so docstrings are user-facing.
 - Markdown must pass markdownlint (`.markdownlint.yaml`); spelling checked by codespell
@@ -44,9 +50,8 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest`, and a strict mkdocs bui
   experts. Our approach combines software engineering best practices and domain
   expertise. Correctness and reproducibility are key concerns. We avoid complex
   architectures, convoluted abstractions and software engineering jargon.
-- Further information about the codebase can be found in the developer documentation -
-  `docs/developers.md`.
 - Unless stated otherwise implementation should be carried out in feature branches off
   of `main`.
+- Prefer using lighter weight models for implementation.
 
 [uv]: https://docs.astral.sh/uv

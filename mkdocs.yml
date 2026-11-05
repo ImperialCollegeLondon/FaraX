@@ -1,5 +1,5 @@
 site_name: FaraX
-watch: [farax]
+watch: [farax, main]
 
 theme:
   name: material

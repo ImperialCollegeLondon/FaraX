@@ -1,0 +1,35 @@
+# Development stack: the FaraX web app and PostgreSQL. See the developer guide for usage.
+services:
+  web:
+    build: .
+    # Apply any pending migrations, then start the development server.
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    env_file: .env
+    environment:
+      # Connect to the postgres service below, overriding the values in .env.
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: '5432'
+      DJANGO_MEDIA_ROOT: /data/media
+    ports:
+      - 127.0.0.1:8000:8000
+    volumes:
+      # Mount the source code read-only so the development server reloads on changes
+      # but the container can't change it.
+      - .:/app:ro
+      - media:/data/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+  postgres:
+    image: postgres:18
+    env_file: .env
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 2s
+      timeout: 5s
+      retries: 15
+volumes:
+  postgres:
+  media:
