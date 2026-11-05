@@ -158,7 +158,7 @@ STORAGES = {
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
+MAILERS: dict[str, dict[str, object]] = {
     "default": {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },

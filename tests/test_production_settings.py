@@ -59,6 +59,19 @@ def test_settings_fail_to_load_when_a_required_variable_is_missing(missing):
     assert f"KeyError: '{missing}'" in result.stderr
 
 
+@pytest.mark.parametrize(
+    "variable, value",
+    [("DJANGO_EMAIL_PORT", "smtp"), ("DJANGO_EMAIL_USE_TLS", "maybe")],
+)
+def test_settings_fail_to_load_with_an_invalid_email_variable(variable, value):
+    """Django refuses to start when an email variable can't be understood."""
+    result = run_with_production_settings(
+        "manage.py", "check", env={**REQUIRED_ENV, variable: value}
+    )
+    assert result.returncode != 0
+    assert f"ValueError: {variable} must be" in result.stderr
+
+
 SERVE_ADMIN_STATIC_FILE = """
 import sys
 

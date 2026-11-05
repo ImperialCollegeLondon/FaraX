@@ -119,6 +119,22 @@ refuses to start if any of them is missing (see also `.env.example`):
 | `POSTGRES_HOST` | Address of the PostgreSQL server. |
 | `POSTGRES_PORT` | Port of the PostgreSQL server. |
 
+Email is sent over SMTP. These variables are optional, and empty values count as unset:
+
+| Variable | Purpose | Default |
+| --- | --- | --- |
+| `DJANGO_EMAIL_HOST` | Address of the SMTP server. | `localhost` |
+| `DJANGO_EMAIL_PORT` | Port of the SMTP server, a whole number. | 587 with TLS, otherwise 25 |
+| `DJANGO_EMAIL_HOST_USER` | User to log in to the SMTP server as. | don't log in |
+| `DJANGO_EMAIL_HOST_PASSWORD` | Password of the SMTP user. | don't log in |
+| `DJANGO_EMAIL_USE_TLS` | `true` to use STARTTLS, `false` not to (`1`/`0`, `yes`/`no` and `on`/`off` also work). | `false` |
+
+Django refuses to start if `DJANGO_EMAIL_PORT` or `DJANGO_EMAIL_USE_TLS` can't be
+understood. Django 6.1 configures email through the `MAILERS` setting rather than the
+deprecated `EMAIL_*` settings, so the production settings pass these values to the SMTP
+backend as `MAILERS["default"]["OPTIONS"]`. The base settings print emails to the
+console instead.
+
 The production settings expect a reverse proxy in front of the app that terminates HTTPS
 and sets the `X-Forwarded-Proto` header. Requests over plain HTTP are redirected to
 HTTPS.

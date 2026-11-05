@@ -48,8 +48,8 @@ settings require all of them. Django connects to PostgreSQL through psycopg.
 
 The base settings (`farax.settings`) need no configuration and are used for local
 development and the tests. The production settings (`farax.settings.production`) extend
-them, turn debug mode off, and read the secret key, allowed hosts and PostgreSQL
-connection from environment variables (see
+them, turn debug mode off, and read the secret key, allowed hosts, PostgreSQL
+connection and SMTP email server from environment variables (see
 [Production settings](index.md#production-settings)). They also add [WhiteNoise] so the
 app serves its own static files.
 
