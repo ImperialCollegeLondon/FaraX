@@ -29,6 +29,11 @@ otherwise.
 `AUTH_USER_MODEL` from the first migration, so it can be extended later without a
 difficult migration.
 
+## Schema registry (proposed)
+
+The schema registry described in the [proposed design](schema-registry.md) and
+[ADR 0004](../adr/0004-immutable-registered-schemas.md) is not implemented yet.
+
 ## File Store
 
 Raw Files are kept unchanged in the File Store, not in the database (see
