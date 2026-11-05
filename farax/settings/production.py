@@ -20,24 +20,26 @@ SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
 ALLOWED_HOSTS = os.environ["DJANGO_ALLOWED_HOSTS"].split(",")
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ["POSTGRES_DB"],
-        "USER": os.environ["POSTGRES_USER"],
-        "PASSWORD": os.environ["POSTGRES_PASSWORD"],
-        "HOST": os.environ["POSTGRES_HOST"],
-        "PORT": os.environ["POSTGRES_PORT"],
-    }
-}
+# The base settings configure PostgreSQL from the POSTGRES_* variables but give all
+# except POSTGRES_DB defaults. Production has no defaults, so require each one here.
+for name in (
+    "POSTGRES_DB",
+    "POSTGRES_USER",
+    "POSTGRES_PASSWORD",
+    "POSTGRES_HOST",
+    "POSTGRES_PORT",
+):
+    if name not in os.environ:
+        raise KeyError(name)
 
 # Static files are collected into STATIC_ROOT with `collectstatic` and served by
 # WhiteNoise, so no separate web server configuration is needed.
-MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
+# WhiteNoise must come directly after SecurityMiddleware.
+MIDDLEWARE = list(MIDDLEWARE)  # noqa: F405
+MIDDLEWARE.insert(
+    MIDDLEWARE.index("django.middleware.security.SecurityMiddleware") + 1,
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    *MIDDLEWARE[1:],  # noqa: F405
-]
+)
 STORAGES = {
     **STORAGES,  # noqa: F405
     "staticfiles": {
@@ -45,18 +47,22 @@ STORAGES = {
     },
 }
 
-# HTTPS. The site is expected to sit behind a reverse proxy that terminates TLS and sets
-# the X-Forwarded-Proto header.
+# HTTPS. These settings assume the site sits behind a reverse proxy that terminates TLS
+# and sets the X-Forwarded-Proto header. The hosting target is not yet decided (#1), so
+# revisit them once it is.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = True
-SECURE_HSTS_SECONDS = 15552000  # 180 days
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-# Joining the browser HSTS preload list is a decision for the hosting target, which is
-# not yet chosen, so Django's warning about it is silenced.
-SILENCED_SYSTEM_CHECKS = ["security.W021"]
+# HSTS is hard to undo once browsers have cached it, so start with a short duration and
+# raise it (e.g. to 180 days) once the hosting target is confirmed.
+SECURE_HSTS_SECONDS = 3600  # 1 hour
+
+# Whether HSTS should cover subdomains (W005) or the site should join the browser HSTS
+# preload list (W021) depends on the hosting target, which is not yet chosen, so
+# Django's warnings about them are silenced.
+SILENCED_SYSTEM_CHECKS = ["security.W005", "security.W021"]
 
 # Email is sent over SMTP, using Django's defaults (localhost, port 25) until email is
 # needed.
