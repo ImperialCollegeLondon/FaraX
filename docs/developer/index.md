@@ -56,7 +56,7 @@ export DJANGO_SETTINGS_MODULE=farax.settings.production
 ```
 
 Debug mode is always off. The following environment variables are required, and Django
-refuses to start if any of them is missing:
+refuses to start if any of them is missing (see also `.env.example`):
 
 | Variable | Purpose |
 | --- | --- |
