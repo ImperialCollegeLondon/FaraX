@@ -53,9 +53,10 @@ Docker Compose runs the full base stack, the web app and PostgreSQL 18, with not
 installed but Docker. `docker-compose.yml` defines two services:
 
 - `web`, built from the `Dockerfile`, applies any pending migrations and then runs
-  Django's development server at `http://127.0.0.1:8000/`. The repository is mounted into the container, so the server
-  reloads when you edit the source code. Rebuild the image (`docker compose build`)
-  only after changing dependencies.
+  Django's development server at `http://127.0.0.1:8000/`. The repository is mounted
+  read-only into the container, so the server reloads when you edit the source code but
+  the container can't change it. Rebuild the image (`docker compose build`) only after
+  changing dependencies.
 - `postgres` runs PostgreSQL 18.
 
 Both read the git-ignored `.env` file, created from `.env.example`. The database and the

@@ -13,8 +13,9 @@ services:
     ports:
       - 127.0.0.1:8000:8000
     volumes:
-      # Mount the source code so the development server reloads on changes.
-      - .:/app
+      # Mount the source code read-only so the development server reloads on changes
+      # but the container can't change it.
+      - .:/app:ro
       - media:/data/media
     depends_on:
       postgres:

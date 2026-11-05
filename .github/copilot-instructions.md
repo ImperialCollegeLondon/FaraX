@@ -49,9 +49,9 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18`
   needed, drop SQLite support rather than work around it.
 - **Docker**: `Dockerfile` and `docker-compose.yml` are for development only (production
   Compose waits for the hosting target). The image installs runtime dependencies from
-  `uv.lock` without editable mode into `/opt/venv`; Compose mounts the repository at
-  `/app` and keeps PostgreSQL data and the File Store (`DJANGO_MEDIA_ROOT`) on named
-  volumes. Files needed in the image must be allowed in the `.dockerignore` allowlist.
+  `uv.lock` without editable mode into `/opt/venv`; Compose mounts the repository
+  read-only at `/app` and keeps PostgreSQL data and the File Store
+  (`DJANGO_MEDIA_ROOT`) on named volumes. Files needed in the image must be allowed in the `.dockerignore` allowlist.
 - **Strict typing**: mypy forbids explicit `Any`, bare generics, and untyped defs (tests
   are exempt from the untyped-defs rule only). Instead of reaching for any `Any`
   consider `object` as an alternative. Whilst the default settings are strict, it may be
