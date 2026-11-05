@@ -30,6 +30,23 @@ uv run python manage.py runserver        # serve the app at http://127.0.0.1:800
 The Django admin is at <http://127.0.0.1:8000/admin/>. After changing models, generate
 a migration with `uv run python manage.py makemigrations` and commit it.
 
+### Running against PostgreSQL
+
+Production and CI use PostgreSQL. To reproduce their behaviour locally, set the
+`POSTGRES_*` environment variables listed in `.env.example`; setting `POSTGRES_DB`
+switches from SQLite to PostgreSQL. FaraX doesn't load `.env` files itself, so export
+the variables in your shell. For example, with a throwaway PostgreSQL container:
+
+```bash
+docker run -d --rm --name farax-postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:18
+export POSTGRES_DB=postgres POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres
+uv run python manage.py migrate
+uv run pytest                     # creates and drops a separate test_postgres database
+docker stop farax-postgres
+```
+
+Treat PostgreSQL results as authoritative: some behaviour differs silently on SQLite.
+
 ## Common tasks
 
 ```bash
