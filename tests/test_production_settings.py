@@ -9,6 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 REQUIRED_ENV = {
@@ -46,3 +48,12 @@ def test_deployment_checks_pass_with_required_variables():
         "manage.py", "check", "--deploy", "--fail-level", "WARNING"
     )
     assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.parametrize("missing", sorted(REQUIRED_ENV))
+def test_settings_fail_to_load_when_a_required_variable_is_missing(missing):
+    """Django refuses to start when any required variable is not set."""
+    env = {key: value for key, value in REQUIRED_ENV.items() if key != missing}
+    result = run_with_production_settings("manage.py", "check", env=env)
+    assert result.returncode != 0
+    assert f"KeyError: '{missing}'" in result.stderr
