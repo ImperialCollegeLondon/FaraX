@@ -1,6 +1,8 @@
 # Copilot Instructions
 
-FaraX is a Django web application (Python >=3.14), managed with [uv], for a data management platform for materials discovery. It is a single Django project at the repository root, generated with `django-admin`: `manage.py`, the project package `farax/` (settings, root URLs, ASGI/WSGI) and a single app `main/` (models, admin, migrations). The version is derived from git tags via `setuptools-scm`, so `farax.__version__` only exists when the package is installed in the environment. See `docs/developer/architecture.md` for the layout.
+FaraX is a Django web application (Python >=3.14), managed with [uv], for a data management platform for materials discovery. It is a single Django project at the repository root: `manage.py`, the project package `farax/` and a single app `main/`.
+
+The developer documentation in `docs/developer/` is the reference for how the project works. Read it before changing Django code, settings, environment variables, the database, the File Store or Docker: `architecture.md` describes FaraX-specific design, `conventions.md` the rules for Django code, tests and Docker, and `index.md` how to run the app and its environment variables. Domain terms are defined in `GLOSSARY.md` and decisions recorded in `docs/adr/`.
 
 ## Build, test, lint
 
@@ -23,36 +25,6 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18`
 
 ## Conventions
 
-- **Django**: `main.User` (subclass of `AbstractUser`) is the auth user model; refer to
-  it via `get_user_model()` or `settings.AUTH_USER_MODEL`. mypy uses the django-stubs
-  plugin and pytest uses pytest-django (settings `farax.settings`); prefer testing
-  through the Django test client (`client`, `admin_client`, `django_user_model`
-  fixtures). Generated migrations are excluded from ruff and coverage. New apps or
-  packages must be added to `[tool.setuptools] packages` and the pytest `--cov` targets.
-  The pre-commit mypy hook runs in its own environment, so packages needed for type
-  checking must also be listed in its `additional_dependencies`.
-- **Settings**: `farax/settings/` is a package. `farax.settings` loads the base
-  settings (`base.py`, no configuration needed); `farax.settings.production` extends
-  them and requires `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS` and the `POSTGRES_*`
-  variables. Tests of the production settings run Django in a subprocess (see
-  `tests/test_production_settings.py`) so they don't affect the rest of the session.
-  Document new environment variables in `docs/developer/index.md` and `.env.example`.
-- **File Store**: Raw Files are kept unchanged in the File Store, the default storage
-  in `STORAGES` (git-ignored `media/`). Access it through Django's storage API, never
-  by file paths, and never store Raw Files in the database.
-- **Database**: PostgreSQL is the production database and CI runs the tests against it
-  only. SQLite (in git-ignored `db/`) is tolerated for local development only and is
-  used when `POSTGRES_DB` is unset; the `POSTGRES_*` variables are documented in
-  `.env.example` (there is no dotenv dependency; `.env` is git-ignored and loaded only
-  by Docker Compose). Don't add
-  SQLite-specific code paths or skip tests for SQLite: if a PostgreSQL-only feature is
-  needed, drop SQLite support rather than work around it.
-- **Docker**: `Dockerfile` and `docker-compose.yml` are for development only (production
-  Compose waits for the hosting target). The image installs runtime dependencies from
-  `uv.lock` without editable mode into `/opt/venv`; Compose mounts the repository
-  read-only at `/app` and keeps PostgreSQL data and the File Store
-  (`DJANGO_MEDIA_ROOT`) on named volumes. The container runs as `nobody` and must never
-  create files in the mounted source tree; run `makemigrations` on the host with uv. Files needed in the image must be allowed in the `.dockerignore` allowlist.
 - **Strict typing**: mypy forbids explicit `Any`, bare generics, and untyped defs (tests
   are exempt from the untyped-defs rule only). Instead of reaching for any `Any`
   consider `object` as an alternative. Whilst the default settings are strict, it may be
@@ -78,8 +50,6 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18`
   experts. Our approach combines software engineering best practices and domain
   expertise. Correctness and reproducibility are key concerns. We avoid complex
   architectures, convoluted abstractions and software engineering jargon.
-- Further information about the codebase can be found in the developer documentation -
-  `docs/developers.md`.
 - Unless stated otherwise implementation should be carried out in feature branches off
   of `main`.
 

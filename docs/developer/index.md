@@ -77,9 +77,9 @@ docker compose exec web python manage.py createsuperuser
 ```
 
 Other management commands that don't write to the source tree run the same way with
-`docker compose exec web python manage.py <command>`. The image installs the runtime dependencies and FaraX itself from
-`uv.lock`, without editable mode and without the development tools, so run the tests
-and linters on the host with uv.
+`docker compose exec web python manage.py <command>`. The image installs the runtime
+dependencies and FaraX itself from `uv.lock` into `/opt/venv`, without editable mode and
+without the development tools, so run the tests and linters on the host with uv.
 
 The container has no `.git` directory, so `setuptools-scm` can't work out the version
 and `farax.__version__` is `0.0.0` in the image. Pass the real version when building if
@@ -163,7 +163,8 @@ uv run mkdocs serve              # preview the documentation
 
 ## Contents
 
-- [Architecture](architecture.md): layout of the Django project and its app.
+- [Architecture](architecture.md): FaraX-specific design of the Django project.
+- [Conventions](conventions.md): rules for Django code, settings, tests and Docker.
 - [Contributing](contributing.md): the contribution workflow.
 - Architecture decision records:
     - [0001 Single repository for all components](../adr/0001-single-repository.md)
