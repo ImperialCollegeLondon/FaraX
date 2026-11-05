@@ -20,16 +20,17 @@ SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
 ALLOWED_HOSTS = os.environ["DJANGO_ALLOWED_HOSTS"].split(",")
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ["POSTGRES_DB"],
-        "USER": os.environ["POSTGRES_USER"],
-        "PASSWORD": os.environ["POSTGRES_PASSWORD"],
-        "HOST": os.environ["POSTGRES_HOST"],
-        "PORT": os.environ["POSTGRES_PORT"],
-    }
-}
+# The base settings configure PostgreSQL from the POSTGRES_* variables but give all
+# except POSTGRES_DB defaults. Production has no defaults, so require each one here.
+for name in (
+    "POSTGRES_DB",
+    "POSTGRES_USER",
+    "POSTGRES_PASSWORD",
+    "POSTGRES_HOST",
+    "POSTGRES_PORT",
+):
+    if name not in os.environ:
+        raise KeyError(name)
 
 # Static files are collected into STATIC_ROOT with `collectstatic` and served by
 # WhiteNoise, so no separate web server configuration is needed.
