@@ -141,8 +141,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/6.1/ref/settings/#storages
 
 # The default storage is the File Store, where Raw Files are kept unchanged (see ADR
-# 0003). It is a git-ignored directory on the local file system.
-MEDIA_ROOT = BASE_DIR / "media"
+# 0003). It is a git-ignored directory on the local file system, which
+# DJANGO_MEDIA_ROOT can move (Docker Compose uses it to put the File Store on a volume).
+MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT", BASE_DIR / "media"))
 
 STORAGES = {
     "default": {
