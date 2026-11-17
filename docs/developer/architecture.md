@@ -37,6 +37,20 @@ The Admin role controls access to Django Admin, not visualisation. Visualisation
 available to non-logged-in visitors as well as logged-in users; login affects which
 data is available, not whether the visualisation functionality is available.
 
+## Application authentication
+
+Application views require sign-in by default through Django's
+`LoginRequiredMiddleware`. Mark intentionally public views with Django's
+`login_not_required` decorator, including future public visualisation views. Use
+`main.auth.admin_required` for application actions restricted to the Admin role:
+anonymous visitors are sent to sign-in and signed-in non-Admins receive HTTP 403.
+
+Local accounts sign in at `/accounts/login/` and sign out with a CSRF-protected POST to
+`/accounts/logout/`. Sign-in returns to a safe requested destination; without one, the
+sign-in page confirms the session rather than inventing a landing page. This scope adds
+no public registration, email recovery, custom lockout, or session-expiry policy.
+Protect publicly exposed deployments with appropriate network controls.
+
 ## Schema registry (proposed)
 
 The schema registry described in the [proposed design](schema-registry.md) and
