@@ -66,3 +66,102 @@ def test_admin_action_requires_admin_role(client, django_user_model):
 
     user.groups.add(Group.objects.get(name="Admin"))
     assert client.get("/admin-action/").status_code == HTTPStatus.OK
+
+
+@pytest.mark.parametrize(
+    "path", ["/accounts/password/change/", "/accounts/password/change/done/"]
+)
+def test_anonymous_users_are_redirected_to_sign_in(client, path):
+    """The password change form and confirmation require authentication."""
+    response = client.get(path)
+
+    assert response.status_code == HTTPStatus.FOUND
+    assert response["Location"] == f"/accounts/login/?next={path}"
+
+
+def test_password_change_updates_only_current_user_and_preserves_session(
+    client, django_user_model
+):
+    """A valid password change affects the signed-in account and keeps it signed in."""
+    user = django_user_model.objects.create_user(
+        username="colleague", password="old-pass-123"
+    )
+    other = django_user_model.objects.create_user(
+        username="other", password="other-pass-123"
+    )
+    client.force_login(user)
+
+    response = client.post(
+        "/accounts/password/change/",
+        {
+            "old_password": "old-pass-123",
+            "new_password1": "a-new-strong-password-456",
+            "new_password2": "a-new-strong-password-456",
+        },
+        follow=True,
+    )
+
+    assert response.redirect_chain == [
+        ("/accounts/password/change/done/", HTTPStatus.FOUND)
+    ]
+    assert b"Password changed" in response.content
+    assert client.get("/accounts/password/change/").status_code == HTTPStatus.OK
+    other.refresh_from_db()
+    assert other.check_password("other-pass-123")
+    assert not Client().login(username="colleague", password="old-pass-123")
+    assert Client().login(username="colleague", password="a-new-strong-password-456")
+
+
+@pytest.mark.parametrize(
+    ("old_password", "new_password1", "new_password2", "error"),
+    [
+        (
+            "wrong-password",
+            "a-new-strong-password-456",
+            "a-new-strong-password-456",
+            "old_password",
+        ),
+        ("old-pass-123", "123", "123", "new_password2"),
+        (
+            "old-pass-123",
+            "a-new-strong-password-456",
+            "different-password-456",
+            "new_password2",
+        ),
+    ],
+)
+def test_invalid_password_change_is_rejected(
+    client, django_user_model, old_password, new_password1, new_password2, error
+):
+    """Incorrect current passwords, weak passwords and mismatches are rejected."""
+    user = django_user_model.objects.create_user(
+        username="colleague", password="old-pass-123"
+    )
+    client.force_login(user)
+
+    response = client.post(
+        "/accounts/password/change/",
+        {
+            "old_password": old_password,
+            "new_password1": new_password1,
+            "new_password2": new_password2,
+        },
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert error in response.context["form"].errors
+    assert Client().login(username="colleague", password="old-pass-123")
+
+
+def test_password_change_link_is_available_to_signed_in_users(
+    client, django_user_model
+):
+    """A signed-in user can find the password change form."""
+    user = django_user_model.objects.create_user(
+        username="colleague", password="old-pass-123"
+    )
+    client.force_login(user)
+
+    response = client.get("/accounts/login/")
+
+    assert b'href="/accounts/password/change/"' in response.content
