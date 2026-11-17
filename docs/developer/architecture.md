@@ -46,10 +46,13 @@ Application views require sign-in by default through Django's
 anonymous visitors are sent to sign-in and signed-in non-Admins receive HTTP 403.
 
 Local accounts sign in at `/accounts/login/` and sign out with a CSRF-protected POST to
-`/accounts/logout/`. Sign-in returns to a safe requested destination; without one, the
-sign-in page confirms the session rather than inventing a landing page. This scope adds
-no public registration, email recovery, custom lockout, or session-expiry policy.
-Protect publicly exposed deployments with appropriate network controls.
+`/accounts/logout/`. Signed-in users can change their own password at
+`/accounts/password/change/` using their current password and the configured password
+validators. Django keeps the current session signed in and other sessions are signed out
+when next used. Sign-in returns to a safe requested destination; without one, the sign-in
+page confirms the session rather than inventing a landing page. This scope adds no public
+registration, email recovery, custom lockout, or session-expiry policy. Protect publicly
+exposed deployments with appropriate network controls.
 
 ## Schema registry (proposed)
 
