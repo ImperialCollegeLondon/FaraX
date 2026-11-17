@@ -27,7 +27,15 @@ otherwise.
 
 `main.User` subclasses Django's `AbstractUser` without adding fields. It is the
 `AUTH_USER_MODEL` from the first migration, so it can be extended later without a
-difficult migration.
+difficult migration. The `Admin` role is represented by membership in the built-in
+`Admin` group, created by a migration. The initial account made with
+`createsuperuser` receives this role; ordinary Admins are staff users but not
+superusers. Only a superuser can change role membership in Django Admin, and the
+`Admin` group itself is not editable there.
+
+The Admin role controls access to Django Admin, not visualisation. Visualisation is
+available to non-logged-in visitors as well as logged-in users; login affects which
+data is available, not whether the visualisation functionality is available.
 
 ## Schema registry (proposed)
 
