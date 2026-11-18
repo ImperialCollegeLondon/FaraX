@@ -80,6 +80,15 @@ def test_non_utf8_file_gives_error(superuser_client):
     assert not RegisteredSchema.objects.exists()
 
 
+def test_null_file_gives_error_and_creates_nothing(superuser_client):
+    """A file containing JSON null is reported rather than failing on save."""
+    response = superuser_client.post(ADD_URL, upload("Null", b"null"))
+
+    assert response.status_code == HTTPStatus.OK
+    assert [e.code for e in form_errors(response)["file"]] == ["null_schema"]
+    assert not RegisteredSchema.objects.exists()
+
+
 def test_name_is_trimmed(superuser_client):
     """Surrounding whitespace is removed from the name."""
     superuser_client.post(ADD_URL, upload("  Co  "))

@@ -13,7 +13,6 @@ from .models import RegisteredSchema, User
 admin.site.register(User, UserAdmin)
 
 
-
 @admin.register(RegisteredSchema)
 class RegisteredSchemaAdmin(admin.ModelAdmin[RegisteredSchema]):
     """Admin for registered schemas: upload on add, read-only definition after."""
