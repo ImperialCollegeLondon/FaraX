@@ -188,11 +188,17 @@ def test_password_change_link_is_available_to_signed_in_users(
 
 @pytest.mark.parametrize(
     "path",
-    ["/accounts/login/", "/accounts/password/change/", "/accounts/password/change/done/"],
+    [
+        "/accounts/login/",
+        "/accounts/password/change/",
+        "/accounts/password/change/done/",
+    ],
 )
 def test_account_pages_show_farax_banner(client, django_user_model, path):
     """Sign-in and password-change pages share the FaraX banner."""
-    user = django_user_model.objects.create_user(username="colleague", password="secret")
+    user = django_user_model.objects.create_user(
+        username="colleague", password="secret"
+    )
     client.force_login(user)
 
     response = client.get(path)
