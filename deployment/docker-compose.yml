@@ -1,0 +1,54 @@
+services:
+
+  web:
+    build: .
+    env_file: .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=farax.settings.production
+      - SECRET_KEY
+      - HOME=/tmp
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    command:
+      - sh
+      - -c
+      - |
+        python manage.py migrate
+        python -m gunicorn farax.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-tmp-dir /tmp
+        - media:/data/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  proxy:
+    image: caddy:2.7.4-alpine
+    depends_on:
+      - web
+    env_file: .env
+    environment:
+      - HOST=web
+      - PORT=8000
+    ports:
+      - 80:80
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+
+  postgres:
+    image: postgres:18
+    env_file: .env
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  postgres:
+  media:
