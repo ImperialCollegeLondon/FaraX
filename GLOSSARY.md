@@ -17,3 +17,5 @@ _Avoid_: Datastore, blob store
 **Registered Schema**:
 A definition of the permitted structure and content of research data that is available
 for use in FaraX.
+It is registered by an administrator uploading a JSON file; only the parsed JSON is
+stored, and the upload is not a Raw File.
