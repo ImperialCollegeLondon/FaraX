@@ -40,6 +40,25 @@ def test_login_honours_safe_destination(client, django_user_model):
     assert response.content == b"Protected"
 
 
+@pytest.mark.parametrize(
+    "destination", [None, "", "https://evil.example/", "//evil.example/"]
+)
+def test_login_without_safe_destination_confirms_sign_in(
+    client, django_user_model, destination
+):
+    """Without a safe destination, sign-in returns to the confirmation page."""
+    django_user_model.objects.create_user(username="colleague", password="secret")
+    data = {"username": "colleague", "password": "secret"}
+    if destination is not None:
+        data["next"] = destination
+
+    response = client.post("/accounts/login/", data, follow=True)
+
+    assert response.redirect_chain == [("/accounts/login/", HTTPStatus.FOUND)]
+    assert b"Signed in" in response.content
+    assert client.get("/protected/").status_code == HTTPStatus.OK
+
+
 def test_invalid_credentials_do_not_authenticate(client, django_user_model):
     """Incorrect credentials leave the visitor signed out."""
     django_user_model.objects.create_user(username="colleague", password="secret")
@@ -165,3 +184,18 @@ def test_password_change_link_is_available_to_signed_in_users(
     response = client.get("/accounts/login/")
 
     assert b'href="/accounts/password/change/"' in response.content
+
+
+@pytest.mark.parametrize(
+    "path",
+    ["/accounts/login/", "/accounts/password/change/", "/accounts/password/change/done/"],
+)
+def test_account_pages_show_farax_banner(client, django_user_model, path):
+    """Sign-in and password-change pages share the FaraX banner."""
+    user = django_user_model.objects.create_user(username="colleague", password="secret")
+    client.force_login(user)
+
+    response = client.get(path)
+
+    assert response.status_code == HTTPStatus.OK
+    assert b"Data management for materials discovery" in response.content
