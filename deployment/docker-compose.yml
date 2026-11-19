@@ -1,24 +1,32 @@
 services:
 
   web:
-    build: .
+    image: ghcr.io/imperialcollegelondon/farax:latest
     env_file: .env
     environment:
-      - DJANGO_SETTINGS_MODULE=farax.settings.production
-      - SECRET_KEY
+      - DJANGO_SETTINGS_MODULE
+      - DJANGO_SECRET_KEY
       - HOME=/tmp
       - POSTGRES_HOST
       - POSTGRES_PORT
       - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
+      - DJANGO_MEDIA_ROOT
+      - DJANGO_ALLOWED_HOSTS
+      - DJANGO_EMAIL_HOST
+      - DJANGO_EMAIL_PORT
+      - DJANGO_EMAIL_HOST_USER
+      - DJANGO_EMAIL_HOST_PASSWORD
+      - DJANGO_EMAIL_USE_TLS
     command:
       - sh
       - -c
       - |
         python manage.py migrate
-        python -m gunicorn farax.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-tmp-dir /tmp
-        - media:/data/media
+        gunicorn farax.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-tmp-dir /tmp
+    volumes:
+      - media:/data/media
     depends_on:
       postgres:
         condition: service_healthy
