@@ -1,30 +1,12 @@
 """URL configuration for the FaraX project.
 
-`urlpatterns` maps URL paths to the Django admin and local authentication views.
-See https://docs.djangoproject.com/en/6.1/topics/http/urls/.
+`urlpatterns` maps URL paths to views. It currently serves only the Django admin at
+`/admin/`. See https://docs.djangoproject.com/en/6.1/topics/http/urls/.
 """
 
 from django.contrib import admin
-from django.contrib.auth.views import (
-    LoginView,
-    LogoutView,
-    PasswordChangeDoneView,
-    PasswordChangeView,
-)
 from django.urls import path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("accounts/login/", LoginView.as_view(next_page="login"), name="login"),
-    path("accounts/logout/", LogoutView.as_view(next_page="login"), name="logout"),
-    path(
-        "accounts/password/change/",
-        PasswordChangeView.as_view(template_name="farax/password_change_form.html"),
-        name="password_change",
-    ),
-    path(
-        "accounts/password/change/done/",
-        PasswordChangeDoneView.as_view(template_name="farax/password_change_done.html"),
-        name="password_change_done",
-    ),
 ]
