@@ -33,9 +33,10 @@ class RegisteredSchemaAddForm(forms.ModelForm[RegisteredSchema]):
             raise forms.ValidationError(
                 "The file must contain a JSON Schema, not null.", code="null_schema"
             )
-        return definition
+        self.cleaned_data["definition"] = definition
+        return uploaded
 
     def save(self, commit: bool = True) -> RegisteredSchema:
         """Store the parsed JSON as the schema definition."""
-        self.instance.definition = self.cleaned_data["file"]
+        self.instance.definition = self.cleaned_data["definition"]
         return super().save(commit=commit)
