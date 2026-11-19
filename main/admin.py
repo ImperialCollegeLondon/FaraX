@@ -1,121 +1,109 @@
-"""Admin site registrations for the main app."""
+"""Admin site registrations for the main app.
 
-from __future__ import annotations
+There are three kinds of account:
 
-from typing import TYPE_CHECKING
+1. Superusers have unrestricted access.
+2. Staff in the "Full Admin (non-superuser)" group can do everything in the admin site
+   except make anyone a superuser or change or delete a superuser. Create the group
+   with `ensure_full_admin_group` and add staff users to it.
+3. Everyone else is not staff, so Django does not let them into the admin site at all.
+"""
 
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import Group
+from django.contrib.admin.options import Action, ActionLocation
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.models import Group, Permission
 from django.db.models import QuerySet
 from django.forms import ModelForm
-from django.forms.models import BaseInlineFormSet
 from django.http import HttpRequest
 
-from .models import ADMIN_GROUP_NAME, User
+from .models import User
 
-if TYPE_CHECKING:
-    from django.contrib.admin.options import _FieldsetSpec
+FULL_ADMIN_GROUP_NAME = "Full Admin (non-superuser)"
 
 
-class FaraXUserAdmin(UserAdmin):  # type: ignore[type-arg]
-    """Let Admins manage accounts without granting them role privileges."""
+def ensure_full_admin_group() -> Group:
+    """Create the full-admin group if needed and give it every permission.
 
-    actions = None
-    readonly_fields = ("last_login", "date_joined")
+    It is safe to call repeatedly. There is no Django permission for becoming a
+    superuser, so granting all permissions is safe as long as `SafeUserAdmin` guards the
+    `is_superuser` field.
+    """
+    group, _ = Group.objects.get_or_create(name=FULL_ADMIN_GROUP_NAME)
+    group.permissions.set(Permission.objects.all())
+    return group
 
-    def get_queryset(self, request: HttpRequest) -> QuerySet[User]:
-        """Hide the controlled superuser account from ordinary Admins."""
-        queryset = super().get_queryset(request)
-        if request.user.is_superuser:
-            return queryset
-        return queryset.exclude(is_superuser=True)
 
-    def get_fieldsets(
-        self, request: HttpRequest, obj: User | None = None
-    ) -> _FieldsetSpec:
-        """Hide role and staff controls from ordinary Admins."""
-        if request.user.is_superuser:
-            return super().get_fieldsets(request, obj)
-        if obj is None:
-            return [(None, {"fields": ("username", "password1", "password2")})]
-        return [
-            (None, {"fields": ("username", "password")}),
-            ("Personal info", {"fields": ("first_name", "last_name", "email")}),
-            ("Permissions", {"fields": ("is_active",)}),
-        ]
+class SafeUserAdmin(DjangoUserAdmin):  # type: ignore[type-arg]
+    """Behaves exactly like the stock UserAdmin (so "full access" is preserved),
+    with two extra guards layered on top:
+
+    * Non-superusers can never set is_superuser=True on anyone.
+    (Django's UserAdmin.get_form already disables this field for
+    non-superusers — kept here as an explicit, visible guarantee.)
+
+    * Non-superusers can never change or delete an account that is
+    already a superuser. They can still see it in the list / open it
+    read-only, but the form is rendered disabled and save/delete is
+    blocked server-side.
+    """  # noqa: D205, D415
+
+    def get_form(
+        self,
+        request: HttpRequest,
+        obj: User | None = None,
+        change: bool = False,
+        **kwargs: object,
+    ) -> type[ModelForm[User]]:
+        """Never let a non-superuser edit the `is_superuser` field."""
+        form = super().get_form(request, obj, change=change, **kwargs)
+        if not request.user.is_superuser and "is_superuser" in form.base_fields:
+            form.base_fields["is_superuser"].disabled = True
+        return form
 
     def save_model(
         self, request: HttpRequest, obj: User, form: ModelForm[User], change: bool
     ) -> None:
-        """Keep existing superusers from being downgraded in Django Admin."""
-        if (
-            change
-            and obj.pk is not None
-            and User.objects.filter(pk=obj.pk, is_superuser=True).exists()
-        ):
-            obj.is_superuser = True
-            obj.is_staff = True
+        """Force `is_superuser` off for non-superusers, whatever was submitted."""
+        if not request.user.is_superuser:
+            obj.is_superuser = False
         super().save_model(request, obj, form, change)
-
-    def save_related(
-        self,
-        request: HttpRequest,
-        form: ModelForm[User],
-        formsets: list[BaseInlineFormSet[User, User, ModelForm[User]]],
-        change: bool,
-    ) -> None:
-        """Keep staff access consistent with the Admin role."""
-        super().save_related(request, form, formsets, change)
-        user = form.instance
-        if user.is_superuser:
-            admin_group, _ = Group.objects.get_or_create(name=ADMIN_GROUP_NAME)
-            user.groups.add(admin_group)
-        user.is_staff = user.is_superuser or user.is_admin
-        user.save(update_fields=["is_staff"])
-
-    def has_module_permission(self, request: HttpRequest) -> bool:
-        """Allow Admin-role users to see the user-management module."""
-        return request.user.is_authenticated and request.user.is_admin
-
-    def has_view_permission(
-        self, request: HttpRequest, obj: User | None = None
-    ) -> bool:
-        """Allow Admin-role users to view accounts except the bootstrap superuser."""
-        return (
-            request.user.is_authenticated
-            and request.user.is_admin
-            and (obj is None or request.user.is_superuser or not obj.is_superuser)
-        )
-
-    def has_add_permission(self, request: HttpRequest) -> bool:
-        """Allow Admin-role users to create accounts."""
-        return request.user.is_authenticated and request.user.is_admin
 
     def has_change_permission(
         self, request: HttpRequest, obj: User | None = None
     ) -> bool:
-        """Allow Admin-role users to change accounts except the bootstrap superuser."""
-        return (
-            request.user.is_authenticated
-            and request.user.is_admin
-            and (obj is None or request.user.is_superuser or not obj.is_superuser)
-        )
+        """Only superusers can change superuser accounts."""
+        if not super().has_change_permission(request, obj):
+            return False
+        return request.user.is_superuser or obj is None or not obj.is_superuser
 
     def has_delete_permission(
         self, request: HttpRequest, obj: User | None = None
     ) -> bool:
-        """Allow Admin-role users to delete accounts except the bootstrap superuser."""
-        return (
-            request.user.is_authenticated
-            and request.user.is_admin
-            and (
-                obj is None
-                or request.user.is_superuser
-                or (not obj.is_superuser and not obj.is_admin)
-            )
-        )
+        """Only superusers can delete superuser accounts."""
+        if not super().has_delete_permission(request, obj):
+            return False
+        return request.user.is_superuser or obj is None or not obj.is_superuser
+
+    def get_actions(
+        self,
+        request: HttpRequest,
+        action_location: ActionLocation = ActionLocation.CHANGE_LIST,
+    ) -> dict[str, Action | None]:
+        """Remove bulk delete for non-superusers, as it skips the per-user check."""
+        actions = super().get_actions(request, action_location)
+        if not request.user.is_superuser:
+            actions.pop("delete_selected", None)
+        return actions
+
+    def delete_queryset(self, request: HttpRequest, queryset: QuerySet[User]) -> None:
+        """Never delete superusers on behalf of a non-superuser."""
+        if not request.user.is_superuser:
+            queryset = queryset.exclude(is_superuser=True)
+        super().delete_queryset(request, queryset)
 
 
-admin.site.unregister(Group)
-admin.site.register(User, FaraXUserAdmin)
+# A model can only be registered once, so remove any existing registration first.
+if admin.site.is_registered(User):
+    admin.site.unregister(User)
+admin.site.register(User, SafeUserAdmin)

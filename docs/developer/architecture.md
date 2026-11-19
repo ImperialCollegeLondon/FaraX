@@ -27,32 +27,13 @@ otherwise.
 
 `main.User` subclasses Django's `AbstractUser` without adding fields. It is the
 `AUTH_USER_MODEL` from the first migration, so it can be extended later without a
-difficult migration. The `Admin` role is represented by membership in the built-in
-`Admin` group, created by a migration. The initial account made with
-`createsuperuser` receives this role; ordinary Admins are staff users but not
-superusers. Only a superuser can change role membership in Django Admin, and the
-`Admin` group itself is not editable there.
+difficult migration.
 
-The Admin role controls access to Django Admin, not visualisation. Visualisation is
-available to non-logged-in visitors as well as logged-in users; login affects which
-data is available, not whether the visualisation functionality is available.
-
-## Application authentication
-
-Application views require sign-in by default through Django's
-`LoginRequiredMiddleware`. Mark intentionally public views with Django's
-`login_not_required` decorator, including future public visualisation views. Use
-`main.auth.admin_required` for application actions restricted to the Admin role:
-anonymous visitors are sent to sign-in and signed-in non-Admins receive HTTP 403.
-
-Local accounts sign in at `/accounts/login/` and sign out with a CSRF-protected POST to
-`/accounts/logout/`. Signed-in users can change their own password at
-`/accounts/password/change/` using their current password and the configured password
-validators. Django keeps the current session signed in and other sessions are signed out
-when next used. Sign-in returns to a safe requested destination; without one, the sign-in
-page confirms the session rather than inventing a landing page. This scope adds no public
-registration, email recovery, custom lockout, or session-expiry policy. Protect publicly
-exposed deployments with appropriate network controls.
+Staff who are not superusers can be given full access to the admin site by adding them
+to the "Full Admin (non-superuser)" group, which `main.admin.ensure_full_admin_group`
+creates with every permission. `SafeUserAdmin` stops them making anyone a superuser and
+stops them changing or deleting superuser accounts. Accounts that are not staff cannot
+use the admin site.
 
 ## Schema registry (proposed)
 
