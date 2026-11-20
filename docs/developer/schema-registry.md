@@ -9,15 +9,17 @@
 
 `main.RegisteredSchema` stores a required display name and the parsed JSON definition.
 Through Django Admin, an administrator uploads one JSON file and names the schema;
-the add form's only content check is that the file parses as JSON (UTF-8, optional
-byte-order mark). Otherwise it reports an error and registers nothing. The change page
+the add form's only content checks are that the file is no larger than the upload size
+limit and parses as JSON (UTF-8, optional byte-order mark). Otherwise it reports an
+error and registers nothing. The limit is the `SCHEMA_UPLOAD_MAX_BYTES` setting, read
+from the `DJANGO_SCHEMA_UPLOAD_MAX_BYTES` environment variable (see the
+[Developer Guide](index.md#schema-uploads)). The change page
 shows the definition read-only. Names are trimmed, at most 255 characters, and unique
 with case-sensitive comparison. The identifier is the model's automatic primary key.
 Access uses Django Admin's standard add, view, change and delete permissions.
 
 Not yet implemented: schema validation and draft handling, duplicate-key and
-non-standard number rejection, exact decimal numbers, immutability, deletion rules and
-the upload size limit. Parts of the design below describing these are still proposals.
+non-standard number rejection, exact decimal numbers, immutability and deletion rules. Parts of the design below describing these are still proposals.
 
 ## Scope and permissions
 

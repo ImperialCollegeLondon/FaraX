@@ -160,6 +160,19 @@ STORAGES = {
 }
 
 
+# Schema registry
+
+SCHEMA_UPLOAD_MAX_BYTES = int(
+    os.environ.get("DJANGO_SCHEMA_UPLOAD_MAX_BYTES", "512_000")
+)
+"""Largest schema file, in bytes, that can be uploaded to register a schema."""
+if SCHEMA_UPLOAD_MAX_BYTES <= 0:
+    raise ValueError(
+        "DJANGO_SCHEMA_UPLOAD_MAX_BYTES must be a positive whole number, "
+        f"not {SCHEMA_UPLOAD_MAX_BYTES!r}"
+    )
+
+
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
