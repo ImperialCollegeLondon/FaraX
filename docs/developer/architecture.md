@@ -35,9 +35,11 @@ difficult migration.
 parsed JSON `definition` (a `JSONField`). It is registered in Django Admin, where an
 administrator uploads a JSON file; the file itself is not kept and does not use the
 File Store. Other components retrieve a definition with
-`RegisteredSchema.objects.get(pk=...)`. The rest of the
-[proposed design](schema-registry.md) and
-[ADR 0004](../adr/0004-immutable-registered-schemas.md) is not implemented yet.
+`RegisteredSchema.objects.get(pk=...)`. Definition
+immutability from
+[ADR 0004](../adr/0004-immutable-registered-schemas.md) is enforced in
+`RegisteredSchema.save()`; the draft part is not implemented yet, nor is the rest of
+the [proposed design](schema-registry.md).
 
 ## File Store
 
