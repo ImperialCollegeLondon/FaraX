@@ -48,6 +48,12 @@ class RegisteredSchema(models.Model):
         as different. Updates never write the definition column. After an insert the
         definition is reloaded so it matches what the database stored.
 
+        Args:
+            force_insert: If True, perform an SQL INSERT.
+            force_update: If True, perform an SQL UPDATE.
+            using: The database alias to use.
+            update_fields: The fields to update, or None for all fields.
+
         Raises:
             ValidationError: If the definition differs from the stored one.
         """
