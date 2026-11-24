@@ -8,8 +8,6 @@ There are three kinds of account:
 3. Everyone else is not staff, so Django does not let them into the admin site at all.
 """
 
-from typing import cast
-
 from django.contrib import admin
 from django.contrib.admin.options import Action, ActionLocation
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
@@ -45,8 +43,7 @@ class SafeUserAdmin(DjangoUserAdmin[User]):
         self, request: HttpRequest, obj: User, form: ModelForm[User], change: bool
     ) -> None:
         """Enforce staff and superuser rules when saving a user."""
-        # make Ssaff all users added as Admin
-        groups = cast(QuerySet[Group] | None, form.cleaned_data.get("groups"))
+        groups: QuerySet[Group] | None = form.cleaned_data.get("groups")
         if groups is not None and groups.filter(name="Admin").exists():
             obj.is_staff = True
         if not request.user.is_superuser:
