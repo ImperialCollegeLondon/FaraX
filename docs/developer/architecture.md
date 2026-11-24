@@ -29,11 +29,12 @@ otherwise.
 `AUTH_USER_MODEL` from the first migration, so it can be extended later without a
 difficult migration.
 
-Staff who are not superusers can be given full access to the admin site by adding them
-to the "Full Admin (non-superuser)" group, which `main.admin.ensure_full_admin_group`
-creates with every permission. `SafeUserAdmin` stops them making anyone a superuser and
-stops them changing or deleting superuser accounts. Accounts that are not staff cannot
-use the admin site.
+The "Admin" group is created by a data migration with permissions to view, add, change
+and delete user accounts. The migration marks any existing members as staff, which is
+required to use the admin site. Users subsequently assigned to the group through Django
+Admin are also made staff by `SafeUserAdmin`. `SafeUserAdmin` stops non-superusers making
+anyone a superuser or changing or deleting superuser accounts. Accounts that are not
+staff cannot use the admin site.
 
 ## Schema registry (proposed)
 

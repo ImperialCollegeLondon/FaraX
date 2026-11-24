@@ -2,14 +2,13 @@
 
 from http import HTTPStatus
 
-import pytest
-
-from main.admin import ensure_full_admin_group
+from django.contrib.auth.models import Group
+from django.urls import reverse
 
 
 def test_admin_login_page_renders(client):
     """The admin login page is served to anonymous users."""
-    response = client.get("/admin/login/")
+    response = client.get(reverse("admin:login"))
     assert response.status_code == HTTPStatus.OK
     assert b"Log in" in response.content
 
@@ -17,43 +16,47 @@ def test_admin_login_page_renders(client):
 def test_superuser_can_log_in_and_reach_admin_index(client, django_user_model):
     """A superuser logging in through the admin login form reaches the admin index."""
     django_user_model.objects.create_superuser(username="admin", password="secret")
+    admin_index = reverse("admin:index")
 
     response = client.post(
-        "/admin/login/?next=/admin/",
+        f"{reverse('admin:login')}?next={admin_index}",
         {"username": "admin", "password": "secret"},
         follow=True,
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.redirect_chain == [("/admin/", HTTPStatus.FOUND)]
+    assert response.redirect_chain == [(admin_index, HTTPStatus.FOUND)]
     assert b"Site administration" in response.content
     assert b"Users" in response.content
 
 
-@pytest.fixture
-def full_admin(django_user_model):
-    """A staff user in the full-admin group who is not a superuser."""
-    user = django_user_model.objects.create_user(
-        username="full", password="secret", is_staff=True
+def test_assigning_admin_group_grants_staff(superuser_client, django_user_model):
+    """Assigning the Admin group through Django Admin grants staff status."""
+    user = django_user_model.objects.create_user(username="new-admin")
+    admin_group = Group.objects.get(name="Admin")
+
+    superuser_client.post(
+        reverse("admin:main_user_change", args=[user.pk]),
+        {
+            "username": user.username,
+            "is_active": "on",
+            "groups": [admin_group.pk],
+            "date_joined_0": "2026-01-01",
+            "date_joined_1": "00:00:00",
+        },
     )
-    user.groups.add(ensure_full_admin_group())
-    return user
+
+    user.refresh_from_db()
+    assert user.is_staff
+    assert user.groups.filter(pk=admin_group.pk).exists()
 
 
-@pytest.fixture
-def superuser(django_user_model):
-    """A superuser."""
-    return django_user_model.objects.create_superuser(
-        username="root", password="secret"
-    )
-
-
-def test_full_admin_cannot_grant_superuser(client, full_admin, django_user_model):
-    """A full admin cannot make themselves or anyone else a superuser."""
+def test_admin_cannot_grant_superuser(client, group_admin, django_user_model):
+    """An Admin cannot make themselves or anyone else a superuser."""
     other = django_user_model.objects.create_user(username="other", password="secret")
-    client.force_login(full_admin)
+    client.force_login(group_admin)
 
-    for target in (full_admin, other):
+    for target in (group_admin, other):
         data = {
             "username": target.username,
             "is_active": "on",
@@ -62,29 +65,36 @@ def test_full_admin_cannot_grant_superuser(client, full_admin, django_user_model
             "date_joined_0": "2026-01-01",
             "date_joined_1": "00:00:00",
         }
-        client.post(f"/admin/main/user/{target.pk}/change/", data)
+        client.post(reverse("admin:main_user_change", args=[target.pk]), data)
         target.refresh_from_db()
         assert not target.is_superuser
 
 
-def test_full_admin_can_manage_normal_users(client, full_admin, django_user_model):
-    """A full admin can see and open ordinary users."""
+def test_admin_can_manage_normal_users(client, group_admin, django_user_model):
+    """An Admin can see and open ordinary users."""
     other = django_user_model.objects.create_user(username="other", password="secret")
-    client.force_login(full_admin)
+    client.force_login(group_admin)
 
-    assert client.get("/admin/main/user/").status_code == HTTPStatus.OK
-    response = client.get(f"/admin/main/user/{other.pk}/change/")
+    changelist = client.get(reverse("admin:main_user_changelist"))
+    assert changelist.status_code == HTTPStatus.OK
+    response = client.get(reverse("admin:main_user_change", args=[other.pk]))
     assert response.status_code == HTTPStatus.OK
 
 
-def test_full_admin_cannot_change_or_delete_superuser(client, full_admin, superuser):
-    """A full admin cannot edit or delete a superuser account."""
-    client.force_login(full_admin)
+def test_admin_cannot_change_or_delete_superuser(
+    client, group_admin, django_user_model
+):
+    """An Admin cannot edit or delete a superuser account."""
+    superuser = django_user_model.objects.create_superuser(username="root")
+    client.force_login(group_admin)
 
     change = client.post(
-        f"/admin/main/user/{superuser.pk}/change/", {"username": "renamed"}
+        reverse("admin:main_user_change", args=[superuser.pk]),
+        {"username": "renamed"},
     )
-    delete = client.post(f"/admin/main/user/{superuser.pk}/delete/", {"post": "yes"})
+    delete = client.post(
+        reverse("admin:main_user_delete", args=[superuser.pk]), {"post": "yes"}
+    )
 
     assert change.status_code == HTTPStatus.FORBIDDEN
     assert delete.status_code == HTTPStatus.FORBIDDEN
@@ -92,13 +102,26 @@ def test_full_admin_cannot_change_or_delete_superuser(client, full_admin, superu
     assert superuser.username == "root"
 
 
-def test_superuser_keeps_full_control(client, superuser, full_admin):
+def test_superuser_keeps_full_control(superuser_client, group_admin):
     """A superuser can still edit and delete other staff and see bulk delete."""
-    client.force_login(superuser)
-
-    response = client.get(f"/admin/main/user/{full_admin.pk}/change/")
+    response = superuser_client.get(
+        reverse("admin:main_user_change", args=[group_admin.pk])
+    )
     assert response.status_code == HTTPStatus.OK
-    assert b"delete_selected" in client.get("/admin/main/user/").content
+    changelist = superuser_client.get(reverse("admin:main_user_changelist"))
+    assert b"delete_selected" in changelist.content
+
+
+def test_admin_group_has_only_user_permissions(db):
+    """The Admin group receives only the permissions needed to manage users."""
+    group = Group.objects.get(name="Admin")
+
+    assert set(group.permissions.values_list("codename", flat=True)) == {
+        "add_user",
+        "change_user",
+        "delete_user",
+        "view_user",
+    }
 
 
 def test_non_staff_user_cannot_use_admin(client, django_user_model):
@@ -106,7 +129,7 @@ def test_non_staff_user_cannot_use_admin(client, django_user_model):
     django_user_model.objects.create_user(username="plain", password="secret")
     client.login(username="plain", password="secret")
 
-    response = client.get("/admin/")
+    response = client.get(reverse("admin:index"))
 
     assert response.status_code == HTTPStatus.FOUND
-    assert response["Location"].startswith("/admin/login/")
+    assert response["Location"].startswith(reverse("admin:login"))

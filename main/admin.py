@@ -3,50 +3,30 @@
 There are three kinds of account:
 
 1. Superusers have unrestricted access.
-2. Staff in the "Full Admin (non-superuser)" group can do everything in the admin site
-   except make anyone a superuser or change or delete a superuser. Create the group
-   with `ensure_full_admin_group` and add staff users to it.
+2. Staff in the "Admin" group can manage user accounts, but cannot make anyone a
+   superuser or change or delete a superuser.
 3. Everyone else is not staff, so Django does not let them into the admin site at all.
 """
+
+from typing import cast
 
 from django.contrib import admin
 from django.contrib.admin.options import Action, ActionLocation
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Group
 from django.db.models import QuerySet
 from django.forms import ModelForm
 from django.http import HttpRequest
 
 from .models import User
 
-FULL_ADMIN_GROUP_NAME = "Full Admin (non-superuser)"
 
+class SafeUserAdmin(DjangoUserAdmin[User]):
+    """Restrict users in the Admin group from changing supersuser status.
 
-def ensure_full_admin_group() -> Group:
-    """Create the full-admin group if needed and give it every permission.
-
-    It is safe to call repeatedly. There is no Django permission for becoming a
-    superuser, so granting all permissions is safe as long as `SafeUserAdmin` guards the
-    `is_superuser` field.
+    Non-superusers cannot grant superuser status or change or delete superuser
+    accounts.
     """
-    group, _ = Group.objects.get_or_create(name=FULL_ADMIN_GROUP_NAME)
-    group.permissions.set(Permission.objects.all())
-    return group
-
-
-class SafeUserAdmin(DjangoUserAdmin):  # type: ignore[type-arg]
-    """Behaves exactly like the stock UserAdmin (so "full access" is preserved),
-    with two extra guards layered on top:
-
-    * Non-superusers can never set is_superuser=True on anyone.
-    (Django's UserAdmin.get_form already disables this field for
-    non-superusers — kept here as an explicit, visible guarantee.)
-
-    * Non-superusers can never change or delete an account that is
-    already a superuser. They can still see it in the list / open it
-    read-only, but the form is rendered disabled and save/delete is
-    blocked server-side.
-    """  # noqa: D205, D415
 
     def get_form(
         self,
@@ -64,7 +44,11 @@ class SafeUserAdmin(DjangoUserAdmin):  # type: ignore[type-arg]
     def save_model(
         self, request: HttpRequest, obj: User, form: ModelForm[User], change: bool
     ) -> None:
-        """Force `is_superuser` off for non-superusers, whatever was submitted."""
+        """Enforce staff and superuser rules when saving a user."""
+        # make Ssaff all users added as Admin
+        groups = cast(QuerySet[Group] | None, form.cleaned_data.get("groups"))
+        if groups is not None and groups.filter(name="Admin").exists():
+            obj.is_staff = True
         if not request.user.is_superuser:
             obj.is_superuser = False
         super().save_model(request, obj, form, change)
@@ -97,7 +81,7 @@ class SafeUserAdmin(DjangoUserAdmin):  # type: ignore[type-arg]
         return actions
 
     def delete_queryset(self, request: HttpRequest, queryset: QuerySet[User]) -> None:
-        """Never delete superusers on behalf of a non-superuser."""
+        """Control bulk deletion of users. Never delete superusers on behalf of a non-superuser."""
         if not request.user.is_superuser:
             queryset = queryset.exclude(is_superuser=True)
         super().delete_queryset(request, queryset)
