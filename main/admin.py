@@ -81,7 +81,7 @@ class SafeUserAdmin(DjangoUserAdmin[User]):
         return actions
 
     def delete_queryset(self, request: HttpRequest, queryset: QuerySet[User]) -> None:
-        """Control bulk deletion of users. Never delete superusers on behalf of a non-superuser."""
+        """Never delete superusers on behalf of a non-superuser."""
         if not request.user.is_superuser:
             queryset = queryset.exclude(is_superuser=True)
         super().delete_queryset(request, queryset)
