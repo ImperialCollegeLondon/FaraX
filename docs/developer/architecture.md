@@ -29,6 +29,13 @@ otherwise.
 `AUTH_USER_MODEL` from the first migration, so it can be extended later without a
 difficult migration.
 
+The "Admin" group is created by a data migration with permissions to view, add, change
+and delete user accounts. The migration marks any existing members as staff, which is
+required to use the admin site. Users subsequently assigned to the group through Django
+Admin are also made staff by `SafeUserAdmin`. `SafeUserAdmin` stops non-superusers making
+anyone a superuser or changing or deleting superuser accounts. Accounts that are not
+staff cannot use the admin site.
+
 ## Schema registry (proposed)
 
 The schema registry described in the [proposed design](schema-registry.md) and
