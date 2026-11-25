@@ -185,6 +185,39 @@ def test_staff_with_view_permission_only_cannot_add(staff_user, staff_client):
     assert RegisteredSchema.objects.count() == 1
 
 
+def padded_schema(size):
+    """A valid JSON schema file padded with spaces to exactly `size` bytes."""
+    return b"{}" + b" " * (size - 2)
+
+
+def test_upload_at_size_limit_accepted(superuser_client):
+    """A file of exactly the default limit of 512,000 bytes is registered."""
+    response = superuser_client.post(ADD_URL, upload("Co", padded_schema(512_000)))
+
+    assert response.status_code == HTTPStatus.FOUND
+    assert RegisteredSchema.objects.filter(name="Co").exists()
+
+
+def test_upload_over_size_limit_rejected(superuser_client):
+    """A file one byte over the default limit is reported and nothing is saved."""
+    response = superuser_client.post(ADD_URL, upload("Co", padded_schema(512_001)))
+
+    assert response.status_code == HTTPStatus.OK
+    assert [e.code for e in form_errors(response)["file"]] == ["too_large"]
+    assert b"512,000 bytes" in response.content
+    assert not RegisteredSchema.objects.exists()
+
+
+def test_configured_size_limit_respected(superuser_client, settings):
+    """A non-default limit accepts files up to it and rejects larger ones."""
+    settings.SCHEMA_UPLOAD_MAX_BYTES = 10
+    superuser_client.post(ADD_URL, upload("Fits", padded_schema(10)))
+    response = superuser_client.post(ADD_URL, upload("Over", padded_schema(11)))
+
+    assert [e.code for e in form_errors(response)["file"]] == ["too_large"]
+    assert list(RegisteredSchema.objects.values_list("name", flat=True)) == ["Fits"]
+
+
 def test_change_view_renames_and_ignores_posted_definition(superuser_client):
     """Renaming works; a posted definition does not change the stored one."""
     schema = RegisteredSchema.objects.create(name="Co", definition={"type": "string"})
