@@ -1,0 +1,49 @@
+services:
+
+  web:
+    image: ghcr.io/imperialcollegelondon/farax:latest
+    env_file: .env
+    command:
+      - bash
+      - -c
+      - |
+        python manage.py migrate
+        python manage.py collectstatic
+        gunicorn farax.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-tmp-dir /tmp --access-logfile - --error-logfile -
+    volumes:
+      - media:/data/media
+      - static:/data/staticfiles
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  proxy:
+    image: caddy:2.11-alpine
+    depends_on:
+      - web
+    env_file: .env
+    environment:
+      - HOST=web
+      - PORT=8000
+    ports:
+      - 80:80
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+
+  postgres:
+    image: postgres:18
+    env_file: .env
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  postgres:
+  media:
+  static:
