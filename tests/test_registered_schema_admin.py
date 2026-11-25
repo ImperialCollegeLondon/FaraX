@@ -216,3 +216,33 @@ def test_configured_size_limit_respected(superuser_client, settings):
 
     assert [e.code for e in form_errors(response)["file"]] == ["too_large"]
     assert list(RegisteredSchema.objects.values_list("name", flat=True)) == ["Fits"]
+
+
+def test_change_view_renames_and_ignores_posted_definition(superuser_client):
+    """Renaming works; a posted definition does not change the stored one."""
+    schema = RegisteredSchema.objects.create(name="Co", definition={"type": "string"})
+
+    response = superuser_client.post(
+        reverse("admin:main_registeredschema_change", args=[schema.pk]),
+        {"name": "Cobalt", "definition": '{"type": "number"}'},
+    )
+
+    assert response.status_code == HTTPStatus.FOUND
+    schema.refresh_from_db()
+    assert schema.name == "Cobalt"
+    assert schema.definition == {"type": "string"}
+
+
+def test_deleted_name_can_be_reused_with_new_identifier(superuser_client):
+    """After deletion the name can be registered again under a new identifier."""
+    old = RegisteredSchema.objects.create(name="Co", definition={"type": "string"})
+
+    response = superuser_client.post(
+        reverse("admin:main_registeredschema_delete", args=[old.pk]), {"post": "yes"}
+    )
+    assert response.status_code == HTTPStatus.FOUND
+    assert not RegisteredSchema.objects.exists()
+
+    superuser_client.post(ADD_URL, upload("Co"))
+
+    assert RegisteredSchema.objects.get(name="Co").pk != old.pk

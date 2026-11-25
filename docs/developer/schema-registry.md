@@ -18,8 +18,18 @@ shows the definition read-only. Names are trimmed, at most 255 characters, and u
 with case-sensitive comparison. The identifier is the model's automatic primary key.
 Access uses Django Admin's standard add, view, change and delete permissions.
 
-Not yet implemented: schema validation and draft handling, duplicate-key and
-non-standard number rejection, exact decimal numbers, immutability and deletion rules. Parts of the design below describing these are still proposals.
+The definition is immutable: `RegisteredSchema.save()` raises a `ValidationError` with
+code `immutable` if the definition differs from the stored one, and never writes the
+definition column on an update. Definitions are compared as canonical JSON, so `1`,
+`1.0` and `true` count as different. Bulk updates and direct SQL are not checked. The
+name can be corrected through the change page. A registration with no dependants can be
+deleted, and its name can then be registered again with a new identifier. No dependent
+models exist yet, so there are no deletion rules beyond this; see
+[Registrations and lifecycle](#registrations-and-lifecycle) for what they must do.
+
+Not yet implemented: schema validation and draft handling (including draft
+immutability), duplicate-key and non-standard number rejection, exact decimal numbers
+and the upload size limit. Parts of the design below describing these are still proposals.
 
 ## Scope and permissions
 
