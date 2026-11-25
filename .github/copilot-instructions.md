@@ -50,14 +50,9 @@ CI (`.github/workflows/ci.yml`) runs `mypy .`, `pytest` (against a `postgres:18`
 
 ## Agent workflow
 
-- Implement in feature branches off `main`, each in its own git worktree, keeping the
-  developer's checkout untouched. Stage files by path (`git add <paths>`).
+- Implement tickets in feature branches off `main`, each in its own git worktree,
+  keeping the developer's checkout untouched. Stage files by path (`git add <paths>`).
 - Implement with lighter-weight models (not Opus). Review with a model from a different
   vendor to the implementer, e.g. review Anthropic models with OpenAI models.
-- For a spec split into tickets: open a feature PR from the integration branch to `main`
-  carrying the `Closes` keywords. Give each ticket its own PR against the integration
-  branch, or against its blocker's branch while that blocker is unmerged (stacked PRs).
-  The developer reviews and merges ticket PRs; merge directly rather than through a
-  merge subagent.
 
 [uv]: https://docs.astral.sh/uv

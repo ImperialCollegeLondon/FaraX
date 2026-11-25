@@ -23,6 +23,7 @@ work).
 """
 
 import os
+from pathlib import Path
 
 from .base import *  # noqa: F403
 
@@ -58,6 +59,7 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+STATIC_ROOT = Path("/data/staticfiles")
 
 # HTTPS. These settings assume the site sits behind a reverse proxy that terminates TLS
 # and sets the X-Forwarded-Proto header. The hosting target is not yet decided (#1), so
@@ -105,5 +107,24 @@ MAILERS = {
     "default": {
         "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
         "OPTIONS": _email_options,
+    },
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"},
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+        "mail_admins": {
+            "level": "ERROR",
+            "filters": ["require_debug_false"],
+            "class": "django.utils.log.AdminEmailHandler",
+        },
+    },
+    "loggers": {
+        "django": {"handlers": ["console", "mail_admins"], "level": "INFO"},
     },
 }

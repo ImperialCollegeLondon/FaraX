@@ -1,6 +1,7 @@
 """Shared fixtures for the test suite."""
 
 import pytest
+from django.contrib.auth.models import Group
 
 
 @pytest.fixture
@@ -22,3 +23,13 @@ def staff_client(client, staff_user):
     """A client logged in as `staff_user`."""
     client.force_login(staff_user)
     return client
+
+
+@pytest.fixture
+def group_admin(django_user_model):
+    """A staff user in the Admin group who is not a superuser."""
+    user = django_user_model.objects.create_user(
+        username="admin", password="secret", is_staff=True
+    )
+    user.groups.add(Group.objects.get(name="Admin"))
+    return user

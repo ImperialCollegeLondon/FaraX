@@ -5,6 +5,13 @@ discovery. It ingests, validates, stores and visualises research data.
 
 ## Language
 
+**Staff**:
+A user account that can access Django's Admin page. Staff can only do what their permissions allow, so a staff user with no permissions can log in but cannot manage anything.
+
+**Admin**:
+A staff user in the Admin group who can manage user accounts but cannot manage
+superuser accounts.
+
 **Raw File**:
 A research-data file exactly as uploaded by a user for ingestion, before any processing.
 It is never modified after upload.
