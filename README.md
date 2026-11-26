@@ -33,7 +33,8 @@ Run the tests with `uv run pytest`.
 
 The Developer Guide (`docs/developer/`, also in the built documentation) covers setup,
 running FaraX against PostgreSQL and with Docker Compose, production settings and
-environment variables, the architecture and the project's conventions.
+environment variables, deploying on a virtual machine, the architecture and the
+project's conventions.
 
 [Django]: https://www.djangoproject.com/
 [Docker]: https://docs.docker.com/get-started/get-docker/
