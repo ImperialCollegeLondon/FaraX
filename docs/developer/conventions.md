@@ -44,9 +44,13 @@ Document every new environment variable in `.env.example` and in the
 
 ## Docker
 
-`Dockerfile` and `docker-compose.yml` are for development only; production Compose waits
-until the hosting target is decided. Name Compose files `docker-compose.yml` (a
-pre-commit hook checks this). Containers run as `nobody` and mount the source tree
+`Dockerfile` and the root `docker-compose.yml` are for local development only. The
+`deployment/` directory holds the Compose setup for the development deployment on a
+virtual machine (see [Deploying on a virtual machine](deployment.md)); production waits
+until the hosting target is decided. Keep the deployment documentation in step with
+changes to `deployment/` and the production settings. Name Compose files
+`docker-compose.yml` (a pre-commit hook checks this). Containers run as `nobody` and
+mount the source tree
 read-only, so they never create files in it (see
 [Running with Docker Compose](index.md#running-with-docker-compose)). Files needed in the
 image must be allowed in the `.dockerignore` allowlist.
