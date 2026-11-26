@@ -112,8 +112,8 @@ def test_superuser_keeps_full_control(superuser_client, group_admin):
     assert b"delete_selected" in changelist.content
 
 
-def test_admin_group_has_only_user_permissions(db):
-    """The Admin group receives only the permissions needed to manage users."""
+def test_admin_group_has_only_user_and_schema_permissions(db):
+    """The Admin group receives only permissions to manage users and schemas."""
     group = Group.objects.get(name="Admin")
 
     assert set(group.permissions.values_list("codename", flat=True)) == {
@@ -121,6 +121,10 @@ def test_admin_group_has_only_user_permissions(db):
         "change_user",
         "delete_user",
         "view_user",
+        "add_registeredschema",
+        "change_registeredschema",
+        "delete_registeredschema",
+        "view_registeredschema",
     }
 
 

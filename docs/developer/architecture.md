@@ -38,8 +38,15 @@ staff cannot use the admin site.
 
 ## Schema registry (proposed)
 
-The schema registry described in the [proposed design](schema-registry.md) and
-[ADR 0004](../adr/0004-immutable-registered-schemas.md) is not implemented yet.
+`main.RegisteredSchema` holds a schema's unique, case-sensitive display name and its
+parsed JSON `definition` (a `JSONField`). It is registered in Django Admin, where an
+administrator uploads a JSON file; the file itself is not kept and does not use the
+File Store. Other components retrieve a definition with
+`RegisteredSchema.objects.get(pk=...)`. Definition
+immutability from
+[ADR 0004](../adr/0004-immutable-registered-schemas.md) is enforced in
+`RegisteredSchema.save()`; the draft part is not implemented yet, nor is the rest of
+the [proposed design](schema-registry.md).
 
 ## File Store
 

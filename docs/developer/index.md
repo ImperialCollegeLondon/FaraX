@@ -53,6 +53,11 @@ docker stop farax-postgres
 
 Treat PostgreSQL results as authoritative: some behaviour differs silently on SQLite.
 
+### Schema uploads
+
+`DJANGO_SCHEMA_UPLOAD_MAX_BYTES` sets the largest schema file, in bytes, that an
+administrator can upload to register a schema.
+
 ### Running with Docker Compose
 
 Docker Compose runs the full base stack, the web app and PostgreSQL 18, with nothing
