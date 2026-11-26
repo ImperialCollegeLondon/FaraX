@@ -173,6 +173,7 @@ uv run mkdocs serve              # preview the documentation
 - [Conventions](conventions.md): rules for Django code, settings, tests and Docker.
 - [Contributing](contributing.md): the contribution workflow.
 - [Schema registry design](schema-registry.md): the proposed approach for registering JSON Schemas.
+- [Deployment](deployment.md): the deployment instructions using docker-compose.
 - Architecture decision records:
     - [0001 Single repository for all components](../adr/0001-single-repository.md)
     - [0002 PostgreSQL in production, SQLite tolerated for local development](../adr/0002-postgresql-with-sqlite-for-local-development.md)

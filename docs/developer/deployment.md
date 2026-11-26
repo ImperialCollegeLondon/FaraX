@@ -1,12 +1,12 @@
 # Deploying on a virtual machine
 
 !!! warning
-This is a development deployment: everything runs on one virtual machine (VM). It is
-good for trying FaraX out and for sharing a working copy with collaborators. It is
-not the production setup. Production will use managed services configured in the
-cloud provider, Azure in our case, such as a managed PostgreSQL database and a
-managed web service, rather than containers on a VM (see
-[Moving to production](#moving-to-production)).
+    This is a development deployment: everything runs on one virtual machine (VM). It is
+    good for trying FaraX out and for sharing a working copy with collaborators. It is
+    not the production setup. Production will use managed services configured in the
+    cloud provider, Azure in our case, such as a managed PostgreSQL database and a
+    managed web service, rather than containers on a VM (see
+    [Moving to production](#moving-to-production)).
 
 The `deployment/` directory contains everything needed to run FaraX on a VM with
 [Docker Compose]:
@@ -94,11 +94,11 @@ through. They are described in
 [Production settings](index.md#production-settings).
 
 !!! note
-The PostgreSQL image only reads `POSTGRES_USER`, `POSTGRES_PASSWORD` and
-`POSTGRES_DB` the first time it starts, when the `postgres` volume is empty.
-Changing them afterwards doesn't change the existing database, and FaraX will fail
-to connect. Either change the credentials inside PostgreSQL too, or delete the
-volume (and its data) with `docker compose down -v` and start again.
+    The PostgreSQL image only reads `POSTGRES_USER`, `POSTGRES_PASSWORD` and
+    `POSTGRES_DB` the first time it starts, when the `postgres` volume is empty.
+    Changing them afterwards doesn't change the existing database, and FaraX will fail
+    to connect. Either change the credentials inside PostgreSQL too, or delete the
+    volume (and its data) with `docker compose down -v` and start again.
 
 ## Start FaraX
 
