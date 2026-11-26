@@ -32,6 +32,7 @@ RUN uv sync --locked --no-dev --no-editable
 # in the mounted source tree. The File Store directory is created here and owned by
 # `nobody`, so the named volume mounted over it inherits that ownership and is writable.
 RUN mkdir -p /data/media && chown nobody:nogroup /data/media
+RUN mkdir -p /data/staticfiles && chown nobody:nogroup /data/staticfiles
 USER nobody
 
 EXPOSE 8000
